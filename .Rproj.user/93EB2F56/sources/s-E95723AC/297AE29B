@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1588919486480.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "297AE29B",
+    "lastKnownWriteTime" : 1588919539,
+    "last_content_update" : 1588919539569,
+    "path" : "~/Desktop/GCN_singlecell/simulators/splattermodify/R/AllGenerics.R",
+    "project_path" : "R/AllGenerics.R",
+    "properties" : {
+        "cursorPosition" : "83,10",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 8,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

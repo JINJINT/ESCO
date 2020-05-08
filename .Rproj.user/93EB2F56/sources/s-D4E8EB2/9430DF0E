@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1588923396315.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1427226415",
+    "id" : "9430DF0E",
+    "lastKnownWriteTime" : 1588924621,
+    "last_content_update" : 1588924621229,
+    "path" : "~/Desktop/GCN_singlecell/simulators/splattermodify/DESCRIPTION",
+    "project_path" : "DESCRIPTION",
+    "properties" : {
+        "cursorPosition" : "15,115",
+        "scrollLine" : "9"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 8,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "dcf"
+}

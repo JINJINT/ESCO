@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1588927713289.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "35BD14A3",
+    "lastKnownWriteTime" : 1587674476,
+    "last_content_update" : 1587674476,
+    "path" : "~/Desktop/GCN_singlecell/simulators/splattermodify/R/evaluations.R",
+    "project_path" : "R/evaluations.R",
+    "properties" : {
+        "cursorPosition" : "104,42",
+        "scrollLine" : "0"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

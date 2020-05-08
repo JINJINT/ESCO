@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1588921186385.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "302210885",
+    "id" : "60449DD6",
+    "lastKnownWriteTime" : 1588923359,
+    "last_content_update" : 1588923359594,
+    "path" : "~/Desktop/GCN_singlecell/simulators/splattermodify/R/escoParams-methods.R",
+    "project_path" : "R/escoParams-methods.R",
+    "properties" : {
+        "cursorPosition" : "75,6",
+        "scrollLine" : "61"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

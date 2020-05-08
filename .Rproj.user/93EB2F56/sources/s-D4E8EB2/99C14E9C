@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1588921854785.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3204245601",
+    "id" : "99C14E9C",
+    "lastKnownWriteTime" : 1588920756,
+    "last_content_update" : 1588920756,
+    "path" : "~/Desktop/GCN_singlecell/simulators/splattermodify/R/SplatParams-methods.R",
+    "project_path" : "R/SplatParams-methods.R",
+    "properties" : {
+        "cursorPosition" : "244,16",
+        "scrollLine" : "232"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

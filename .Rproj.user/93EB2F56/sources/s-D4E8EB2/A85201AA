@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1588921832457.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1566097524",
+    "id" : "A85201AA",
+    "lastKnownWriteTime" : 1588140040,
+    "last_content_update" : 1588140040,
+    "path" : "~/Desktop/GCN_singlecell/simulators/splattermodify/R/splat-simulate.R",
+    "project_path" : "R/splat-simulate.R",
+    "properties" : {
+        "cursorPosition" : "22,15",
+        "scrollLine" : "9"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 7,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

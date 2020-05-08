@@ -1,0 +1,518 @@
+---
+title: "Introduction to Splatter"
+author: "Luke Zappia"
+date: "`r Sys.Date()`"
+output:
+    BiocStyle::html_document:
+        toc: true
+vignette: >
+  %\VignetteIndexEntry{An introduction to the Splatter package}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r knitr-options, echo = FALSE, message = FALSE, warning = FALSE}
+# To render an HTML version that works nicely with github and web pages, do:
+# rmarkdown::render("vignettes/splatter.Rmd", "all")
+knitr::opts_chunk$set(fig.align = 'center', fig.width = 6, fig.height = 5,
+                      dev = 'png')
+
+# Use exact BSPARAM to avoid warnings
+options(BiocSingularParam.default = BiocSingular::ExactParam())
+```
+
+![Splatter logo](splatter-logo-small.png)
+
+Welcome to Splatter! Splatter is an R package for the simple simulation of
+single-cell RNA sequencing data. This vignette gives an overview and
+introduction to Splatter's functionality.
+
+# Installation
+
+Splatter can be installed from Bioconductor:
+
+```{r install, eval = FALSE}
+if (!requireNamespace("BiocManager", quietly=TRUE))
+    install.packages("BiocManager")
+BiocManager::install("splatter")
+```
+
+To install the most recent development version from Github use:
+
+```{r install-github, eval = FALSE}
+BiocManager::install("Oshlack/splatter", dependencies = TRUE,
+                     build_vignettes = TRUE)
+```
+
+# Quickstart
+
+Assuming you already have a matrix of count data similar to that you wish to
+simulate there are two simple steps to creating a simulated data set with
+Splatter. Here is an example a mock dataset generated with the `scater` package:
+
+```{r quickstart}
+# Load package
+library(splatter)
+
+# Create mock data
+library(scater)
+set.seed(1)
+sce <- mockSCE()
+
+# Estimate parameters from mock data
+params <- splatEstimate(sce)
+# Simulate data using estimated parameters
+sim <- splatSimulate(params)
+```
+
+These steps will be explained in detail in the following sections but briefly
+the first step takes a dataset and estimates simulation parameters from it and
+the second step takes those parameters and simulates a new dataset.
+
+# The Splat simulation
+
+Before we look at how we estimate parameters let's first look at how Splatter
+simulates data and what those parameters are. We use the term 'Splat' to refer
+to the Splatter's own simulation and differentiate it from the package itself.
+The core of the Splat model is a gamma-Poisson distribution used to generate a
+gene by cell matrix of counts. Mean expression levels for each gene are
+simulated from a [gamma distribution][gamma] and the Biological Coefficient of
+Variation is used to enforce a mean-variance trend before counts are simulated
+from a [Poisson distribution][poisson]. Splat also allows you to simulate
+expression outlier genes (genes with mean expression outside the gamma
+distribution) and dropout (random knock out of counts based on mean expression).
+Each cell is given an expected library size (simulated from a log-normal
+distribution) that makes it easier to match to a given dataset.
+
+Splat can also simulate differential expression between groups of different
+types of cells or differentiation paths between different cells types where
+expression changes in a continuous way. These are described further in the
+[simulating counts] section.
+
+# The `SplatParams` object
+
+All the parameters for the Splat simulation are stored in a `SplatParams`
+object. Let's create a new one and see what it looks like.
+
+```{r SplatParams}
+params <- newSplatParams()
+params
+```
+
+As well as telling us what type of object we have ("A `Params` object of class
+`SplatParams`") and showing us the values of the parameter this output gives us
+some extra information. We can see which parameters can be estimated by the
+`splatEstimate` function (those in parentheses), which can't be estimated
+(those in brackets) and which have been changed from their default values (those
+in ALL CAPS). For more details about the parameters of the Splat simulation
+refer to the [Splat parameters vignette](splat_params.html).
+
+## Getting and setting
+
+If we want to look at a particular parameter, for example the number of genes to
+simulate, we can extract it using the `getParam` function:
+
+```{r getParam}
+getParam(params, "nGenes")
+```
+
+Alternatively, to give a parameter a new value we can use the `setParam`
+function:
+
+```{r setParam}
+params <- setParam(params, "nGenes", 5000)
+getParam(params, "nGenes")
+```
+
+If we want to extract multiple parameters (as a list) or set multiple parameters
+we can use the `getParams` or `setParams` functions:
+
+```{r getParams-setParams}
+# Set multiple parameters at once (using a list)
+params <- setParams(params, update = list(nGenes = 8000, mean.rate = 0.5))
+# Extract multiple parameters as a list
+getParams(params, c("nGenes", "mean.rate", "mean.shape"))
+# Set multiple parameters at once (using additional arguments)
+params <- setParams(params, mean.shape = 0.5, de.prob = 0.2)
+params
+```
+
+The parameters with have changed are now shown in ALL CAPS to indicate that they
+been changed form the default.
+
+We can also set parameters directly when we call `newSplatParams`:
+
+```{r newSplatParams-set}
+params <- newSplatParams(lib.loc = 12, lib.scale = 0.6)
+getParams(params, c("lib.loc", "lib.scale"))
+```
+
+# Estimating parameters
+
+Splat allows you to estimate many of it's parameters from a data set containing
+counts using the `splatEstimate` function.
+
+```{r splatEstimate}
+# Get the mock counts matrix
+counts <- counts(sce)
+
+# Check that counts is an integer matrix
+class(counts)
+typeof(counts)
+
+# Check the dimensions, each row is a gene, each column is a cell
+dim(counts)
+
+# Show the first few entries
+counts[1:5, 1:5]
+
+params <- splatEstimate(counts)
+```
+
+Here we estimated parameters from a counts matrix but `splatEstimate` can also
+take a `SingleCellExperiment` object. The estimation process has the following
+steps:
+
+1. Mean parameters are estimated by fitting a gamma distribution to the mean
+   expression levels.
+2. Library size parameters are estimated by fitting a log-normal distribution to
+   the library sizes.
+3. Expression outlier parameters are estimated by determining the number of
+   outliers and fitting a log-normal distribution to their difference from the
+   median.
+4. BCV parameters are estimated using the `estimateDisp` function from the
+   `edgeR` package.
+5. Dropout parameters are estimated by checking if dropout is present and
+   fitting a logistic function to the relationship between mean expression and
+   proportion of zeros.
+
+For more details of the estimation procedures see `?splatEstimate`.
+
+# Simulating counts
+
+Once we have a set of parameters we are happy with we can use `splatSimulate`
+to simulate counts. If we want to make small adjustments to the parameters we
+can provide them as additional arguments, alternatively if we don't supply any
+parameters the defaults will be used:
+
+```{r splatSimulate}
+sim <- splatSimulate(params, nGenes = 1000)
+sim
+```
+
+Looking at the output of `splatSimulate` we can see that `sim` is
+`SingleCellExperiment` object with `r nrow(sim)` features (genes) and
+`r ncol(sim)` samples (cells). The main part of this object is a features
+by samples matrix containing the simulated counts (accessed using `counts`),
+although it can also hold other expression measures such as FPKM or TPM.
+Additionally a `SingleCellExperiment` contains phenotype information about
+each cell (accessed using `colData`) and feature information about each gene
+(accessed using `rowData`). Splatter uses these slots, as well as `assays`, to
+store information about the intermediate values of the simulation.
+
+```{r SCE}
+# Access the counts
+counts(sim)[1:5, 1:5]
+# Information about genes
+head(rowData(sim))
+# Information about cells
+head(colData(sim))
+# Gene by cell matrices
+names(assays(sim))
+# Example of cell means matrix
+assays(sim)$CellMeans[1:5, 1:5]
+```
+
+An additional (big) advantage of outputting a `SingleCellExperiment` is that we
+get immediate access to other analysis packages, such as the plotting functions
+in `scater`. For example we can make a PCA plot:
+
+```{r pca}
+# Use scater to calculate logcounts
+sim <- logNormCounts(sim)
+# Plot PCA
+sim <- runPCA(sim)
+plotPCA(sim)
+```
+
+(**NOTE:** Your values and plots may look different as the simulation is random
+and produces different results each time it is run.)
+
+For more details about the `SingleCellExperiment` object refer to the [vignette]
+[SCE-vignette]. For information about what you can do with `scater` refer to the
+`scater` documentation and [vignette][scater-vignette].
+
+The `splatSimulate` function outputs the following additional information about
+the simulation:
+
+* **Cell information (`colData`)**
+    * `Cell` - Unique cell identifier.
+    * `Group` - The group or path the cell belongs to.
+    * `ExpLibSize` - The expected library size for that cell.
+    * `Step` (paths only) - How far along the path each cell is.
+* **Gene information (`rowData`)**
+    * `Gene` - Unique gene identifier.
+    * `BaseGeneMean` - The base expression level for that gene.
+    * `OutlierFactor` - Expression outlier factor for that gene (1 is not an
+      outlier).
+    * `GeneMean` - Expression level after applying outlier factors.
+    * `DEFac[Group]` - The differential expression factor for each gene
+      in a particular group (1 is not differentially expressed).
+    * `GeneMean[Group]` - Expression level of a gene in a particular group after
+      applying differential expression factors.
+* **Gene by cell information (`assays`)**
+    * `BaseCellMeans` - The expression of genes in each cell adjusted for
+      expected library size.
+    * `BCV` - The Biological Coefficient of Variation for each gene in
+      each cell.
+    * `CellMeans` - The expression level of genes in each cell adjusted
+      for BCV.
+    * `TrueCounts` - The simulated counts before dropout.
+    * `Dropout` - Logical matrix showing which counts have been dropped in which
+      cells.
+
+Values that have been added by Splatter are named using `UpperCamelCase` to
+separate them from the `underscore_naming` used by `scater` and other packages.
+For more information on the simulation see `?splatSimulate`.
+
+## Simulating groups
+
+So far we have only simulated a single population of cells but often we are
+interested in investigating a mixed population of cells and looking to see what
+cell types are present or what differences there are between them. Splatter is
+able to simulate these situations by changing the `method` argument Here we are
+going to simulate two groups, by specifying the `group.prob` parameter and
+setting the `method` parameter to `"groups"`:
+
+(**NOTE:** We have also set the `verbose` argument to `FALSE` to stop Splatter
+printing progress messages.)
+
+```{r groups}
+sim.groups <- splatSimulate(group.prob = c(0.5, 0.5), method = "groups",
+                            verbose = FALSE)
+sim.groups <- logNormCounts(sim.groups)
+sim.groups <- runPCA(sim.groups)
+plotPCA(sim.groups, colour_by = "Group")
+```
+
+As we have set both the group probabilities to 0.5 we should get approximately
+equal numbers of cells in each group (around 50 in this case). If we wanted
+uneven groups we could set `group.prob` to any set of probabilities that sum to
+1.
+
+## Simulating paths
+
+The other situation that is often of interest is a differentiation process where
+one cell type is changing into another. Splatter approximates this process by
+simulating a series of steps between two groups and randomly assigning each
+cell to a step. We can create this kind of simulation using the `"paths"`
+method.
+
+```{r paths}
+sim.paths <- splatSimulate(de.prob = 0.2, nGenes = 1000, method = "paths",
+                           verbose = FALSE)
+sim.paths <- logNormCounts(sim.paths)
+sim.paths <- runPCA(sim.paths)
+plotPCA(sim.paths, colour_by = "Step")
+```
+
+Here the colours represent the "step" of each cell or how far along the
+differentiation path it is. We can see that the cells with dark colours are more
+similar to the originating cell type and the light coloured cells are closer
+to the final, differentiated, cell type. By setting additional parameters it is
+possible to simulate more complex process (for example multiple mature cell
+types from a single progenitor).
+
+## Batch effects
+
+Another factor that is important in the analysis of any sequencing experiment
+are batch effects, technical variation that is common to a set of samples
+processed at the same time. We apply batch effects by telling Splatter how many
+cells are in each batch:
+
+```{r batches}
+sim.batches <- splatSimulate(batchCells = c(50, 50), verbose = FALSE)
+sim.batches <- logNormCounts(sim.batches)
+sim.batches <- runPCA(sim.batches)
+plotPCA(sim.batches, colour_by = "Batch")
+```
+
+This looks at lot like when we simulated groups and that is because the process
+is very similar. The difference is that batch effects are applied to all genes,
+not just those that are differentially expressed, and the effects are usually
+smaller. By combining groups and batches we can simulate both unwanted variation
+that we aren't interested in (batch) and the wanted variation we are looking for
+(group):
+
+```{r batch-groups}
+sim.groups <- splatSimulate(batchCells = c(50, 50), group.prob = c(0.5, 0.5),
+                            method = "groups", verbose = FALSE)
+sim.groups <- logNormCounts(sim.groups)
+sim.groups <- runPCA(sim.groups)
+plotPCA(sim.groups, shape_by = "Batch", colour_by = "Group")
+```
+
+Here we see that the effects of the group (first component) are stronger than
+the batch effects (second component) but by adjusting the parameters we could
+made the batch effects dominate.
+
+## Convenience functions
+
+Each of the Splatter simulation methods has it's own convenience function.
+To simulate a single population use `splatSimulateSingle()` (equivalent to
+`splatSimulate(method = "single")`), to simulate groups use
+`splatSimulateGroups()` (equivalent to `splatSimulate(method = "groups")`) or to
+simulate paths use `splatSimulatePaths()` (equivalent to
+`splatSimulate(method = "paths")`).
+
+# Other simulations
+
+As well as it's own Splat simulation method the Splatter package contains
+implementations of other single-cell RNA-seq simulations that have been
+published or wrappers around simulations included in other packages. To see all
+the available simulations run the `listSims()` function:
+
+```{r listSims}
+listSims()
+```
+
+Each simulation has it's own prefix which gives the name of the functions
+associated with that simulation. For example the prefix for the simple
+simulation is `simple` so it would store it's parameters in a `SimpleParams`
+object that can be created using `newSimpleParams()` or estimated from real
+data using `simpleEstimate()`. To simulate data using that simulation you
+would use `simpleSimulate()`. Each simulation returns a `SingleCellExperiment`
+object with intermediate values similar to that returned by `splatSimulate()`.
+For more detailed information on each simulation see the appropriate help page
+(eg. `?simpleSimulate` for information on how the simple simulation works or `?
+lun2Estimate` for details of how the Lun 2 simulation estimates parameters) or
+refer to the appropriate paper or package.
+
+# Other expression values
+
+Splatter is designed to simulate count data but some analysis methods expect
+other expression values, particularly length-normalised values such as TPM
+or FPKM. The `scater` package has functions for adding these values to a
+`SingleCellExperiment` object but they require a length for each gene. The
+`addGeneLengths` function can be used to simulate these lengths:
+
+```{r lengths}
+sim <- simpleSimulate(verbose = FALSE)
+sim <- addGeneLengths(sim)
+head(rowData(sim))
+```
+
+We can then use `scater` to calculate TPM:
+
+```{r TPM}
+tpm(sim) <- calculateTPM(sim, rowData(sim)$Length)
+tpm(sim)[1:5, 1:5]
+```
+
+The default method used by `addGeneLengths` to simulate lengths is to generate
+values from a log-normal distribution which are then rounded to give an integer
+length. The parameters for this distribution are based on human protein coding
+genes but can be adjusted if needed (for example for other species).
+Alternatively lengths can be sampled from a provided vector (see
+`?addGeneLengths` for details and an example).
+
+# Comparing simulations and real data
+
+One thing you might like to do after simulating data is to compare it to a real
+dataset, or compare simulations with different parameters or models. Splatter
+provides a function `compareSCEs` that aims to make these comparisons easier. As
+the name suggests this function takes a list of `SingleCellExperiment` objects,
+combines the datasets and produces some plots comparing them. Let's make two
+small simulations and see how they compare.
+
+```{r comparison}
+sim1 <- splatSimulate(nGenes = 1000, batchCells = 20, verbose = FALSE)
+sim2 <- simpleSimulate(nGenes = 1000, nCells = 20, verbose = FALSE)
+comparison <- compareSCEs(list(Splat = sim1, Simple = sim2))
+
+names(comparison)
+names(comparison$Plots)
+```
+
+The returned list has three items. The first two are the combined datasets by
+gene (`RowData`) and by cell (`ColData`) and the third contains some
+comparison plots (produced using `ggplot2`), for example a plot of the
+distribution of means:
+
+```{r comparison-means}
+comparison$Plots$Means
+```
+
+These are only a few of the plots you might want to consider but it should be
+easy to make more using the returned data. For example, we could plot the
+number of expressed genes against the library size:
+
+```{r comparison-libsize-features}
+library("ggplot2")
+ggplot(comparison$ColData, aes(x = sum, y = detected, colour = Dataset)) +
+    geom_point()
+```
+
+## Comparing differences
+
+Sometimes instead of visually comparing datasets it may be more interesting
+to look at the differences between them. We can do this using the
+`diffSCEs` function. Similar to `compareSCEs` this function takes a list of
+`SingleCellExperiment` objects but now we also specify one to be a reference.
+A series of similar plots are returned but instead of showing the overall
+distributions they demonstrate differences from the reference.
+
+```{r difference}
+difference <- diffSCEs(list(Splat = sim1, Simple = sim2), ref = "Simple")
+difference$Plots$Means
+```
+
+We also get a series of Quantile-Quantile plot that can be used to compare
+distributions.
+
+```{r difference-qq}
+difference$QQPlots$Means
+```
+
+## Making panels
+
+Each of these comparisons makes several plots which can be a lot to look at. To
+make this easier, or to produce figures for publications, you can make use of
+the functions `makeCompPanel`, `makeDiffPanel` and `makeOverallPanel`.
+
+These functions combine the plots into a single panel using the `cowplot`
+package. The panels can be quite large and hard to view (for example in
+RStudio's plot viewer) so it can be better to output the panels and view them
+separately. Luckily `cowplot` provides a convenient function for saving the
+images. Here are some suggested parameters for outputting each of the panels:
+
+```{r save-panels, eval = FALSE}
+# This code is just an example and is not run
+panel <- makeCompPanel(comparison)
+cowplot::save_plot("comp_panel.png", panel, nrow = 4, ncol = 3)
+
+panel <- makeDiffPanel(difference)
+cowplot::save_plot("diff_panel.png", panel, nrow = 3, ncol = 5)
+
+panel <- makeOverallPanel(comparison, difference)
+cowplot::save_plot("overall_panel.png", panel, ncol = 4, nrow = 7)
+```
+
+# Citing Splatter
+
+If you use Splatter in your work please cite our paper:
+
+```{r citation}
+citation("splatter")
+```
+
+# Session information {-}
+
+```{r sessionInfo}
+sessionInfo()
+```
+
+[gamma]: https://en.wikipedia.org/wiki/Gamma_distribution
+[poisson]: https://en.wikipedia.org/wiki/Poisson_distribution
+[scater-vignette]: https://bioconductor.org/packages/release/bioc/vignettes/scater/inst/doc/vignette.html
+[SCE-vignette]: https://bioconductor.org/packages/devel/bioc/vignettes/SingleCellExperiment/inst/doc/intro.html

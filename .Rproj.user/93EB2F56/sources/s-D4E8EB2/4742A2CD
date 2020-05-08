@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1588921185706.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "29809425",
+    "id" : "4742A2CD",
+    "lastKnownWriteTime" : 1588281779,
+    "last_content_update" : 1588281779,
+    "path" : "~/Desktop/GCN_singlecell/simulators/splattermodify/R/esco-estimate.R",
+    "project_path" : "R/esco-estimate.R",
+    "properties" : {
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

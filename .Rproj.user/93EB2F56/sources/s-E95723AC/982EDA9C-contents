@@ -1,0 +1,95 @@
+Package: SplatterModify
+Type: Package
+Title: Simple Simulation of Single-cell RNA Sequencing Data with gene co-expression
+Version: 0.1.0
+Date: 2020-3-31
+Author: Jinjin Tian
+Authors@R:
+    c(person("Jinjin", "Tian", role = c("aut", "cre"),
+      email = "jinjint@andrew.cmu.edu"
+      ))
+Maintainer: Jinjin Tian <jinjint@andrew.cmu.au>
+Description: This package is forked from package Splatter, which is a package for the simulation of single-cell RNA
+    sequencing count data. This new pacakge allows users to simulate single cell data with any given correlations among genes, 
+    while allowing discrete / tree-structured cell groups and smooth trajectories. It provides a simple interface 
+    for creating complex simulations that are reproducible and well-documented. Most parameters can be
+    estimated from real data and functions are provided for comparing and visualizing real and simulated datasets. 
+License: GPL-3 + file LICENSE
+LazyData: TRUE
+Depends:
+    R (>= 3.4),
+    SingleCellExperiment
+Imports:
+    AUC,
+    akima,
+    ape,
+    BiocGenerics,
+    BiocParallel,
+    bigSCale,
+    checkmate,
+    crayon,
+    clusterGeneration,
+    cowplot,
+    clues,
+    doBy,
+    doParallel,
+    doSNOW,
+    edgeR,
+    extraDistr,
+    fitdistrplus,
+    foreach,
+    jmuOutlier,
+    ggplot2,
+    locfit,
+    matrixStats,
+    methods,
+    matrixcalc,
+    MASS,
+    NMF,
+    progress,
+    Rmpfr,
+    RVAideMemoire,
+    RColorBrewer,
+    scales,
+    scater (>= 1.7.4),
+    stats,
+    SummarizedExperiment,
+    SC3,
+    svMisc,
+    S4Vectors,
+    SCnorm,
+    utils,
+    VGAM,
+    viridis,
+    ZIM,
+    DescTools,
+    BiocStyle,
+    limSolve,
+    pscl,
+    spelling,
+    umap
+Suggests:
+    covr,
+    cowplot,
+    knitr,
+    lme4,
+    progress,
+    testthat,
+    rmarkdown,
+    scDD,
+    scran,
+    mfa,
+    phenopath,
+    BASiCS (>= 1.7.10),
+    zinbwave,
+    SparseDC,
+    BiocManager,
+    igraph,
+    DropletUtils,
+    BiocSingular
+biocViews: SingleCell, RNASeq, Transcriptomics, GeneExpression, Sequencing,
+    Software, ImmunoOncology
+RoxygenNote: 6.1.1
+Encoding: UTF-8
+VignetteBuilder: knitr
+Language: en-GB

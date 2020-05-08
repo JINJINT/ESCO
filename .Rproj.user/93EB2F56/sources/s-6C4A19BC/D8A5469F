@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1588928576406.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2708567950",
+    "id" : "D8A5469F",
+    "lastKnownWriteTime" : 1554908301,
+    "last_content_update" : 1554908301,
+    "path" : "~/Desktop/GCN_singlecell/simulators/SplatterModify/.Rbuildignore",
+    "project_path" : null,
+    "properties" : {
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "text"
+}

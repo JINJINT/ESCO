@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1588921184283.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "82AB12C",
+    "lastKnownWriteTime" : 1588926114,
+    "last_content_update" : 1588926114,
+    "path" : "~/Desktop/GCN_singlecell/simulators/splattermodify/R/esco-simulate.R",
+    "project_path" : "R/esco-simulate.R",
+    "properties" : {
+        "cursorPosition" : "1360,21",
+        "scrollLine" : "1361"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

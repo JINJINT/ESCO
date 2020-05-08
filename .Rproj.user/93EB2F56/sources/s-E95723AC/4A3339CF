@@ -1,0 +1,25 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1588923553155.000,
+    "dirty" : true,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "4A3339CF",
+    "lastKnownWriteTime" : 1588926429,
+    "last_content_update" : 1588926696848,
+    "path" : "~/Downloads/splatter-master/vignettes/esco.Rmd",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "392,17",
+        "scrollLine" : "385"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 9,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}
