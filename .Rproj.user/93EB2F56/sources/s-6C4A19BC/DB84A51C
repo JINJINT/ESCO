@@ -1,23 +1,23 @@
 {
     "collab_server" : "",
     "contents" : "",
-    "created" : 1588928576406.000,
+    "created" : 1588930761620.000,
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
-    "hash" : "2708567950",
-    "id" : "D8A5469F",
-    "lastKnownWriteTime" : 1554908301,
-    "last_content_update" : 1554908301,
-    "path" : "~/Desktop/GCN_singlecell/simulators/SplatterModify/.Rbuildignore",
+    "hash" : "1427226415",
+    "id" : "DB84A51C",
+    "lastKnownWriteTime" : 1588924621,
+    "last_content_update" : 1588924621,
+    "path" : "~/Desktop/GCN_singlecell/simulators/SplatterModify/DESCRIPTION",
     "project_path" : null,
     "properties" : {
     },
     "read_only" : false,
     "read_only_alternatives" : [
     ],
-    "relative_order" : 3,
+    "relative_order" : 7,
     "source_on_save" : false,
     "source_window" : "",
-    "type" : "text"
+    "type" : "dcf"
 }

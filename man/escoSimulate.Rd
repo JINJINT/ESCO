@@ -4,7 +4,8 @@
 \alias{escoSimulate}
 \alias{escoSimulateSingle}
 \alias{escoSimulateGroups}
-\alias{escoSimulateTrees}
+\alias{escoSimulateTree}
+\alias{escoSimulatePath}
 \title{ESCO simulation}
 \usage{
 escoSimulate(params = newescoParams(), type = c("single", "groups",
@@ -14,7 +15,9 @@ escoSimulateSingle(params = newescoParams(), verbose = TRUE, ...)
 
 escoSimulateGroups(params = newescoParams(), verbose = TRUE, ...)
 
-escoSimulateTrees(params = newescoParams(), verbose = TRUE, ...)
+escoSimulateTree(params = newescoParams(), verbose = TRUE, ...)
+
+escoSimulatePath(params = newescoParams(), verbose = TRUE, ...)
 }
 \arguments{
 \item{type}{which type of heterogenounity to use. Options are :

@@ -1,0 +1,95 @@
+library(ggplot2)
+library(umap)
+library(RColorBrewer)
+
+setwd("/Users/jinjin/Desktop/GCN_singlecell/simulators/splattermodify/")
+devtools::load_all()
+sim <- kersplatSimulate(nGenes = 500, nCells = 1000, 
+                            paths.deprob = 0.1, 
+                            paths.design = data.frame(
+                              Path = c(1, 2, 3, 4, 5),
+                              From = c(0, 1, 1, 2, 2),
+                              Steps = c(100, 100, 100, 100, 100)
+                            ),
+                            cells.design = data.frame(
+                              Path = c(1, 2, 3, 4, 5),
+                              Probability = c(0.2, 0.2, 0.2, 0.2),
+                              Alpha = 1,
+                              Beta = 1
+                            ),
+                            dirname = "/Users/jinjin/Desktop/result/")
+
+
+truedata = assays(sim)$TrueCounts
+rawdata = assays(sim)$counts
+symdata = assays(sim)$observedcounts
+params = metadata(sim)$Params
+cells = which(colData(sim)$Path==1)
+genes = which(params@paths.DEgenes==1)
+
+umapplot(t(t(truedata)/colSums(truedata)), celltype  = colData(sim)$Path, labels = unique(colData(sim)$Path))
+umapplot(t(t(truedata)/colSums(truedata))[genes,], celltype  = colData(sim)$Path, labels = unique(colData(sim)$Path))
+
+gcnlist = list()
+gcnlist[["True"]] = gcn(truedata[,cells], CPM = FALSE, rownames(truedata)[genes], name = "pearson")
+gcnlist[["Raw"]] = gcn(rawdata[,cells], CPM = FALSE,rownames(rawdata)[genes], name = "pearson")
+heatgcn(gcnlist, dirname = "/Users/jinjin/Desktop/")
+
+
+# paths.means = params@paths.means
+# plot(1:100, paths.means[[1]][genes[5],])
+# plot(1:100, paths.means[[2]][genes[5],])
+# plot(1:100, paths.means[[3]][genes[5],])
+
+compsim <- kersplatSimulate(nGenes = 1000, nCells = 2000, 
+                            paths.deprob = 0.2, 
+                            paths.design = data.frame(
+                              Path = c(1, 2, 3, 4, 5),
+                              From = c(0, 1, 1, 2, 2),
+                              Steps = c(200, 100, 100, 50, 50)
+                            ),
+                            cells.design = data.frame(
+                              Path = c(1, 2, 3, 4, 5),
+                              Probability = c(0.4, 0.2, 0.2, 0.1, 0.1),
+                              Alpha = 1,
+                              Beta = 1
+                            ),
+                            dirname = "/Users/jinjin/Desktop/result/")
+
+compsim = readRDS("/Users/jinjin/Desktop/result/sim.rds")
+truedata = assays(compsim)$TrueCounts
+rawdata = assays(compsim)$counts
+symdata = assays(compsim)$observedcounts
+params = metadata(compsim)$Params
+cells = which(colData(compsim)$Path==1)
+genes = which(params@paths.DEgenes==1)
+
+umapplot(t(t(truedata)/colSums(truedata)), celltype  = colData(compsim)$Path, labels = levels(colData(compsim)$Path))
+umapplot(t(t(truedata)/colSums(truedata))[genes,], celltype  = colData(compsim)$Path, labels = levels(colData(compsim)$Path))
+
+gcnlist = list()
+gcnlist[["comrho"]] = metadata(compsim)$Params@corr[[1]]
+gcnlist[["compTrue"]] = gcn(truedata[,cells], rownames(truedata)[genes], name = "pearson")
+gcnlist[["compRaw"]] = gcn(rawdata[,cells], rownames(rawdata)[genes], name = "pearson")
+heatgcn(gcnlist, dirname = "/Users/jinjin/Desktop/")
+
+gcnlist = list()
+gcnlist[["compallTrue"]] = gcn(truedata, rownames(truedata)[genes], name = "pearson")
+gcnlist[["compallRaw"]] = gcn(rawdata, rownames(rawdata)[genes], name = "pearson")
+heatgcn(gcnlist, dirname = "/Users/jinjin/Desktop/")
+
+
+
+cellid = data.frame(path = as.numeric(colData(compsim)$Path), step = as.numeric(colData(compsim)$Step))
+order(cellid[,1], cellid[,2])
+heatdata(list(comptrue = truedata[genes,]), 
+         cellinfo = data.frame(cell = colnames(truedata), newcelltype = colData(compsim)$Path),
+         colv = order(cellid[,1], cellid[,2]),
+         dirname = "/Users/jinjin/Desktop/")
+
+subcell = which(!(colData(compsim)$Path %in% c(3,4)))
+heatdata(list(comptrue = truedata[genes, subcell]), 
+         cellinfo = data.frame(cell = colnames(truedata)[subcell], newcelltype = colData(compsim)$Path[subcell]),
+         colv = order(cellid[subcell][,1], cellid[subcell][,2]),
+         dirname = "/Users/jinjin/Desktop/sub")
+

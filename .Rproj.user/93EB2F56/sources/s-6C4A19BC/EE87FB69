@@ -1,19 +1,19 @@
 {
     "collab_server" : "",
     "contents" : "",
-    "created" : 1588928512735.000,
+    "created" : 1588929770677.000,
     "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
     "hash" : "0",
-    "id" : "619380D7",
-    "lastKnownWriteTime" : 1588928531,
-    "last_content_update" : 1588928531561,
-    "path" : "~/Desktop/GCN_singlecell/simulators/SplatterModify/.gitignore",
+    "id" : "EE87FB69",
+    "lastKnownWriteTime" : 1588945591,
+    "last_content_update" : 1588945591666,
+    "path" : "~/Desktop/GCN_singlecell/analysis/example.R",
     "project_path" : null,
     "properties" : {
-        "cursorPosition" : "1,10",
-        "scrollLine" : "0"
+        "cursorPosition" : "361,0",
+        "scrollLine" : "346"
     },
     "read_only" : false,
     "read_only_alternatives" : [
@@ -21,5 +21,5 @@
     "relative_order" : 2,
     "source_on_save" : false,
     "source_window" : "",
-    "type" : "gitignore"
+    "type" : "r_source"
 }
