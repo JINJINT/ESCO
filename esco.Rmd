@@ -1,0 +1,340 @@
+---
+title: "Introduction to ESCO"
+author: "Jinjin Tian"
+date: "`r Sys.Date()`"
+output:
+    BiocStyle::html_document:
+        toc: true
+vignette: >
+  %\VignetteIndexEntry{An introduction to the ESCO simulator}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r knitr-options, echo = FALSE, message = FALSE, warning = FALSE}
+# To render an HTML version that works nicely with github and web pages, do:
+# rmarkdown::render("vignettes/escoter.Rmd", "all")
+knitr::opts_chunk$set(fig.align = 'center', 
+                      fig.width = 10, fig.height = 8,
+                      dev = 'png')
+
+# Use exact BSPARAM to avoid warnings
+options(BiocSingularParam.default = BiocSingular::ExactParam())
+setwd("/Users/jinjin/Desktop/GCN_singlecell/simulators/SplatterModify")
+devtools::load_all()
+showdir = "/Users/jinjin/Desktop/GCN_singlecell/show/"
+if(!dir.exists(showdir))dir.create(showdir)
+```
+
+Welcome to ``SplatterModify``! ``SplatterModify`` is an R package for the simple simulation of
+single-cell RNA sequencing data, built upon the `splatter` package, with newly added methods ESCO for simulating gene co-expression. This vignette gives an overview and introduction to ESCO's functionality.
+
+# Installation
+
+``SplatterModify`` can be download from Github:
+         https://github.com/JINJINT/SplatterModify
+
+# Overview
+
+We use the term 'ESCO' to refer
+to the newly proposed Ensemble single cell simulator with gene co-expression, and differentiate it from the package SplatterModify itself. As for the marginal behaviour of genes and cells, the core of the ESCO model is foundimentally the same with the original Splat: they both use a gamma-Poisson distribution with a enforced mean-variance trend to generate gene counts, and use a log-normal/normal distribution to give an expected library size for each cell, while outlier genes (genes with mean expression outside the gamma
+distribution) and dropouts (random knock out of counts based on mean expression) are introduced along the way. 
+
+ESCO can also simulate differential expression between groups of different
+types of cells or differentiation paths between different cells types where
+expression changes in a continuous way. These are described further in the [ESCO simulation] section.
+
+
+# ESCO simulation
+Once we have a set of parameters we are happy with, we can use `escoSimulate`
+to simulate counts. If we want to make small adjustments to the parameters we
+can provide them as additional arguments, alternatively if we don't supply any
+parameters the defaults will be used:
+
+```{r escoSimulate, warning = FALSE}
+sim <- escoSimulate(nGenes = 100, nCells  = 50)
+sim
+# Access the counts
+assays(sim)$TrueCounts[1:5, 1:5]
+# Information about genes
+head(rowData(sim))
+# Information about cells
+head(colData(sim))
+# Information about paramters
+str(metadata(sim)$Params)
+```
+
+Looking at the output of `escoSimulate` we can see that `sim` is
+`SingleCellExperiment` object contains phenotype information about
+each cell (accessed using `colData`); feature information about each gene (accessed using `rowData`); genes by cells data matrix and intermediate values of the simulation (accessed using `assays`); and parameters used to generate this simulation (accessed using `metadata`).
+
+The main part of this object is a series of features
+by samples matrix containing the simulated true counts (accessed using `assays(sim)$TrueCounts`); counts with zero-inflation noise; (accessed using `assays(sim)$counts`); counts with downsample noise ((accessed using `assays(sim)$observedcounts`). By default, all three kinds of data matrix will be simulated, while users are allowed to simulated only one or two of them for time/space saving, via specifying the ``dropout.type`` in parameters setting.
+
+For more details about the `SingleCellExperiment` object refer to the [vignette][SCE-vignette]. For information about what you can do with `scater` refer to the `scater` documentation and [vignette][scater-vignette].
+
+Additionally, in order to have better reproducibility, ESCO also allows multiple trials of noisy data generated from one common true counts in one single call, and save them seperately in the directory user provided. The returned ``sim`` on the other hand will only contain one trial of noisy data in order to avoid memory exhuastion.
+
+```{r escoSimulate1, warning = FALSE}
+if(!dir.exists(paste0(showdir,"case1")))
+  dir.create(paste0(showdir,"case1"))
+sim <- escoSimulate(nGenes = 100, nCells  = 50, 
+                    trials = 5, 
+                    dirname = paste0(showdir,"case1/"), 
+                    verbose = FALSE)
+list.files(path = paste0(showdir,"case1/"), full.names = FALSE)
+```
+
+Moreover, ESCO also allows noisy data of different configuration of noise level data generated from one common true counts in one single call, and save them seperately in the directory user provided. The returned ``sim`` on the other hand will only contain one configuration of noisy data in order to avoid memory exhuastion.
+
+```{r escoSimulate2, warning = FALSE}
+if(!dir.exists(paste0(showdir,"case2")))dir.create(paste0(showdir,"case2"))
+sim <- escoSimulate(nGenes = 100, nCells  = 50, 
+                    dropout.mid = c(1,2), 
+                    alpha_mean = c(0.1, 0.2), 
+                    trials = 2, 
+                    dirname = paste0(showdir,"case2/"), 
+                    verbose = FALSE)
+list.files(path = paste0(showdir,"case2/"), full.names = FALSE)
+```
+
+
+## Simulating one cell group
+In this section, we will show specific examples of how to simulate one homogenrous cell with/ without gene co-expression group using ESCO. Fisrtly, we show exmaple of simulation without gene co-expression, where ``heatdata`` and ``heatgcn`` are newly added functions for convinient visualization. 
+
+```{r simulate single random corr, warning = FALSE, fig.height = 4, fig.width = 10}
+sim <- escoSimulateSingle(nGenes = 100, nCells = 50, 
+                          lib.loc = 7, withcorr = TRUE, verbose = FALSE)
+
+# get the data
+datalist = list("simulated truth" = assays(sim)$TrueCounts, 
+                "zero-inflated" = assays(sim)$counts, 
+                "down-sampled" = assays(sim)$observedcounts)
+
+# plotting the data
+heatdata(datalist, norm = FALSE, size = 2, ncol = 3)
+```
+
+```{r, warning = FALSE, fig.height = 4, fig.width = 10}
+# plotting the GCN
+rholist = metadata(sim)$Params@corr
+corrgenes = rownames(rholist[[1]])
+gcnlist = lapply(datalist, function(data)gcn(data, genes = corrgenes))
+gcnlist = append(gcnlist, list("given truth" = rholist[[1]]), 1)
+heatgcn(gcnlist, size = 3, ncol = 4)
+```
+
+You can also provide your own defined GCN. In the following, we take the randomly generated correlation structure in the last simulation as our input.
+
+```{r simulate single given corr, warning = FALSE, fig.height = 4, fig.width = 10}
+sim <- escoSimulateSingle(nGenes = 100, nCells = 50, 
+                          lib.loc = 7, withcorr = TRUE, 
+                          corr = rholist, verbose = FALSE)
+
+# plotting the data
+datalist = list("simulated truth" = assays(sim)$TrueCounts, 
+              "zero-inflated" = assays(sim)$counts, 
+              "down-sampled" = assays(sim)$observedcounts)
+heatdata(datalist, norm = FALSE, size = 2, ncol = 3)
+```
+
+```{r, warning  = FALSE, fig.height = 3, fig.width = 10}
+# plotting the GCN
+rholist = metadata(sim)$Params@corr
+corrgenes = rownames(rholist[[1]])
+gcnlist = lapply(datalist, function(data)gcn(data, genes = corrgenes))
+gcnlist = append(gcnlist, list("given truth" = rholist[[1]]), 1)
+heatgcn(gcnlist, size = 2, ncol = 4)
+```
+
+
+## Simulating multiple discrete groups
+
+So far we have only simulated a single population of cells but often we are
+interested in investigating a mixed population of cells and looking to see what
+cell types are present or what differences there are between them. ESCO is
+able to simulate these situations by changing the `method` argument. Here we are
+going to simulate two groups, by specifying the `group.prob`, ``de.prob`` parameters. The gene-gene correlation can be generated randomly (by default), or given by users.
+
+```{r groups, warning = FALSE, fig.height = 6, fig.width = 10}
+sim<-escoSimulateGroups(nGenes = 200, nCells = 100,
+                        group.prob = c(0.6, 0.4), deall.prob = 0.3,
+                        de.prob = c(0.3, 0.7),
+                        de.facLoc = c(1.9, 2.5), withcorr = TRUE, 
+                        trials = 1, verbose =FALSE)
+
+# organize the marker gene info
+genegroup = paste0("Group", rowData(sim)$GeneGroup)
+genegroup[which(genegroup=="Group0")] = "None"
+geneinfo = data.frame(genes = rowData(sim)$Gene, 
+                      newcelltype = as.factor(genegroup))
+
+# organize the cell info
+cellinfo = data.frame(çells = colData(sim)$Cell, 
+                       newcelltype= as.factor(colData(sim)$Group))
+
+# get the data
+datalist = list("simulated truth" = assays(sim)$TrueCounts, 
+                "zero-inflated" = assays(sim)$counts, 
+                "down-sampled" = assays(sim)$observedcounts)
+
+# plotting the data                     
+heatdata(datalist, cellinfo = cellinfo, geneinfo = geneinfo, 
+         size = 1, ncol = 3)
+```
+
+```{r, warning = FALSE, fig.height = 4, fig.width = 10}
+# plot GCN for all marker genes (i.e. DE genes) across all cell groups
+degeneinfo = geneinfo[which(geneinfo$newcelltype!="None"),]
+degeneinfo$newcelltype = droplevels(degeneinfo$newcelltype)
+degcnlist = lapply(datalist, function(data)gcn(data, genes = degeneinfo$genes))
+heatgcn(degcnlist, geneinfo = degeneinfo, size = 2, ncol = 3)
+```
+
+```{r, warning = FALSE, fig.height = 4, fig.width = 10}
+# plot GCN for marker gene within one cell group
+rholist = metadata(sim)$Params@corr
+group2_gcnlist = lapply(datalist, 
+                        function(data){
+                          gcn(data[,which(colData(sim)$Group=="Group2")], 
+                              CPM2 = TRUE, 
+                              genes = rownames(rholist[["Group2"]]))})
+group2_gcnlist = append(group2_gcnlist, 
+                        list("given truth" = rholist[["Group2"]]), 1)
+heatgcn(group2_gcnlist, size = 3, ncol = 4)
+```
+
+
+## Simulating tree structured cell group
+
+```{r tree, warning  = FALSE}
+#generate the tree
+yaml="
+    name: All
+    Group1:
+        Group1-1:
+             params: NULL
+    Group2:
+        Group2-1:
+             params: NULL
+        Group2-2:
+             params: NULL
+"
+os.list = yaml::yaml.load(yaml)
+tree = data.tree::as.Node(os.list)
+tree = data.tree::as.phylo.Node(tree)
+```
+
+```{r, warning  = FALSE, fig.height = 7, fig.width = 10}
+# simulation
+sim<-escoSimulateTree(nGenes = 500, nCells = 300, 
+                      tree = list(tree), 
+                      group.prob = c(0.4, 0.3, 0.3), 
+                      deall.prob = 0.3, 
+                      de.center = 2,
+                      de.prob = c(0.5, 0.5, 0.5),
+                      de.facLoc = c(1.5, 2, 3), 
+                      de.facScale = c(0.9, 0.9, 0.9), 
+                      withcorr = TRUE,  
+                      trials = 1, verbose = FALSE)
+# get the data
+datatrue = assays(sim)$TrueCounts
+
+# get the cellinfo
+cellinfo  = data.frame(cell = colData(sim)$Cell, 
+                       newcelltype = as.factor(colData(sim)$Group))
+levels(cellinfo$newcelltype) = tree$tip.label
+
+# get the geneinfo
+genegroup = paste0("Group", rowData(sim)$GeneGroup)
+genegroup[which(genegroup=="Group0")] = "None"
+geneinfo = data.frame(genes = rowData(sim)$Gene, 
+                      newcelltype = as.factor(genegroup))
+levels(geneinfo$newcelltype)[1:3] = tree$tip.label
+
+# get the DE geneinfo
+groups <- colData(sim)$Group
+group.names <- sort(unique(groups))
+group.facs.gene <- rowData(sim)[, paste0("DEFac", group.names)]
+DEgene.name = as.character(rowData(sim)$Gene[which(group.facs.gene[,1]>1)])
+degeneinfo = geneinfo[match(DEgene.name, geneinfo$genes),]
+
+# plot the data
+heatdata(list(datatrue), 
+         colv = TRUE, 
+         cellinfo = cellinfo, 
+         geneinfo = degeneinfo, 
+         genes = degeneinfo$genes,
+         size = 1.5, ncol = 1)
+
+```
+
+## Simulating continous cell trajectory
+
+The other situation that is often of interest is a differentiation process where
+one cell type is changing into another. escoter approximates this process by
+simulating a series of steps between two groups and randomly assigning each
+cell to a step. We can create this kind of simulation using the `"paths"`
+method.
+
+```{r paths, warning=FALSE, fig.height = 3, fig.width = 4}
+sim <- escoSimulatePath(nGenes = 1000, nCells = 500,
+                        paths.deprob = 0.3,
+                        paths.design = data.frame(
+                          Path = c(1, 2, 3),
+                          From = c(0, 1, 2),
+                          Steps = c(100, 100, 100)
+                        ),
+                        cells.design = data.frame(
+                          Path = c(1, 2, 3),
+                          Probability = c(0.3, 0.3, 0.4),
+                          Alpha = 1,
+                          Beta = 1
+                        ),
+                        withcorr = TRUE,verbose = FALSE)
+
+
+datatrue = assays(sim)$TrueCounts
+
+# get the cellinfo
+cellinfo = data.frame(cell = colData(sim)$Cell, 
+                      newcelltype = colData(sim)$Path)
+# get the pesudo time
+celltime = data.frame(path = as.numeric(colData(sim)$Path), 
+                      step = as.numeric(colData(sim)$Step))
+celltime = order(celltime[,1], celltime[,2])
+
+# get the geneinfo
+degenes = which(metadata(sim)$Params@paths.DEgenes==1)
+
+# plot the data
+umapplot(t(t(datatrue)/colSums(datatrue)), 
+         celltype  = colData(sim)$Path, 
+         labels = levels(as.factor(colData(sim)$Path)))
+```
+
+```{r, warning  = FALSE}
+heatdata(list("simulated truth" = datatrue[degenes,]),
+         cellinfo = cellinfo,
+         colv = celltime, size = 1, ncol = 1)
+```
+
+
+# GCN comparison
+The new package also provide simple function to compare the GCN of a list of  data, using the first one in the list as the benchmark. You can choose different correlation metric; error metric; clustering method etc. 
+
+```{r, warning  = FALSE, eval = FALSE}
+gcnerr = evaluation(datalist, genes, cells, 
+                    corrname = c("pearson", "spearman"), 
+                    CPM2  = CPM2, errname = c("MSE", "ARI", "AUC"), 
+                    clustk = c(2:9), clustmethod = "hclust")
+
+```
+
+
+
+
+[gamma]: https://en.wikipedia.org/wiki/Gamma_distribution
+[poisson]: https://en.wikipedia.org/wiki/Poisson_distribution
+[scater-vignette]: https://bioconductor.org/packages/release/bioc/vignettes/scater/inst/doc/vignette.html
+[SCE-vignette]: https://bioconductor.org/packages/devel/bioc/vignettes/SingleCellExperiment/inst/doc/intro.html

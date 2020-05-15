@@ -11,14 +11,16 @@ minfunc <- function(x, data){
   else return(x)
 }
 
+
+
 #' @import NMF
 #' @import viridis
 #' @import RColorBrewer
 #' @export
 # plot the gene expressions
-heatdata<-function(datalist, dirname, genes = NULL, cellinfo = NULL, rowv = FALSE, colv = FALSE, geneinfo = NULL,
-                   log = TRUE, norm = FALSE, order = NULL,
-                   maxdata = NULL, mindata = 0, width = 6, height = 4, color = "YlGnBu:100", extrainfo = ""){
+heatdata<-function(datalist, dirname = NULL, genes = NULL, cellinfo = NULL, rowv = FALSE, colv = FALSE, geneinfo = NULL,
+                   log = TRUE, norm = TRUE, order = NULL,
+                   maxdata = NULL, mindata = 0, ncol = 3, size = 3, width = 8, height = 8, color = "YlGnBu:100", extrainfo = ""){
 
   typecell = NA
   typegene = NA
@@ -42,36 +44,65 @@ heatdata<-function(datalist, dirname, genes = NULL, cellinfo = NULL, rowv = FALS
   colors = brewer.pal(n = length(unique(c(genegroups, cellgroups))), name = "Set1")
 
   if(!is.null(cellinfo)){
-    typecell = data.frame(TypeC = cellinfo$newcelltype)
-    cellcolors =  colors[1:length(levels(as.factor(cellinfo$newcelltype)))]
-    colors = colors[-(1:length(levels(as.factor(cellinfo$newcelltype))))]
+    typecell = data.frame("Cell Group" = cellinfo$newcelltype)
+    cellcolors =  colors[1:length(levels(cellinfo$newcelltype))]
+    colors = colors[-(1:length(levels(cellinfo$newcelltype)))]
   }
 
   if(!is.null(geneinfo)){
-    typegene = data.frame(TypeG = geneinfo$newcelltype)
+    typegene = data.frame("Gene Type" = geneinfo$newcelltype)
     genecolors = rep("", length(levels(geneinfo$newcelltype)))
     genecolors[match(levels(cellinfo$newcelltype), levels(geneinfo$newcelltype))] = cellcolors
     genecolors[which(genecolors=="")] = colors[1:length(genecolors[which(genecolors=="")])]
-    genecolors[which(levels(geneinfo$newcelltype)=="None")]="gray48"
+    genecolors[which(levels(geneinfo$newcelltype)=="None")]="gray70"
   }
 
-  colr = list(TypeC = cellcolors, TypeG = genecolors)
+  colr = list("Cell.Group" = cellcolors, "Gene.Type" = genecolors)
+  
+  if(!is.null(dirname)){
 
-  a = aheatmap(log2(datalist[[1]][genes,]+1), Rowv = rowv, Colv = colv,
+     a = aheatmap(log2(datalist[[1]][genes,]+1), Rowv = rowv, Colv = colv,
            color = color, breaks = seq(0, maxfunc(maxdata, log2(datalist[[1]][genes,]+1)), length.out = 101),
-           annRow = typegene, annCol = typecell, annColors = colr, width = 6, height = 4, filename = paste0(dirname, norm, "data", names(datalist)[1],extrainfo, ".png"))
-  #           filename = paste0(dirname, norm, "data", names(datalist)[1],".png")
-  rowv = a$rowInd
-  colv = a$colInd
+           annRow = typegene, annCol = typecell, annColors = colr, width = width, height = height, filename = paste0(dirname, norm, "data", names(datalist)[1],extrainfo, ".png"))
+  
+     rowv = a$rowInd
+     colv = a$colInd
 
-  datalist = datalist[-1]
-  if(length(datalist)>0){
-    for(i in 1:(length(datalist))){
-      aheatmap(log2(datalist[[i]][genes,] + 1),  Rowv = rowv, Colv = colv, revC = FALSE,
+     datalist = datalist[-1]
+     if(length(datalist)>0){
+        for(i in 1:(length(datalist))){
+          aheatmap(log2(datalist[[i]][genes,] + 1),  Rowv = rowv, Colv = colv, revC = FALSE,
                color = color, breaks = seq(mindata, maxfunc(maxdata,log2(datalist[[i]][genes,]+1)), length.out = 101),
-               annRow = typegene, annCol = typecell, annColors = colr, width = 6, height = 4,
+               annRow = typegene, annCol = typecell, annColors = colr, width = width, height = height,
                filename = paste0(dirname, norm, "data", names(datalist)[i],extrainfo,".png"))
+      }
     }
+  }
+  
+  else{
+    par(mfrow=c(ceiling(length(datalist)/ncol), ncol))
+    legend = FALSE
+    if(length(datalist)==1)legend = TRUE
+    a = aheatmap(log2(datalist[[1]][genes,]+1), Rowv = rowv, Colv = colv,
+                 color = color, breaks = seq(0, maxfunc(maxdata, log2(datalist[[1]][genes,]+1)), length.out = 101),
+                 annRow = typegene, annCol = typecell, annColors = colr, legend = legend, annLegend = legend, cellwidth = size, cellheight = size,  main = names(datalist)[1])
+    
+    rowv = a$rowInd
+    colv = a$colInd
+    if(is.null(maxdata))maxdata = max(log2(datalist[[1]][genes,]+1))
+    
+    datalist = datalist[-1]
+    if(length(datalist)>0){
+      for(i in 1:(length(datalist))){
+        legend = FALSE
+        if(i==length(datalist))legend = TRUE
+        
+        aheatmap(log2(datalist[[i]][genes,] + 1),  Rowv = rowv, Colv = colv, revC = FALSE,
+                 color = color, breaks = seq(mindata, maxfunc(maxdata,log2(datalist[[i]][genes,]+1)), length.out = 101),
+                 annRow = typegene, annCol = typecell, annColors = colr, legend = legend, annLegend = legend, cellwidth = size, cellheight = size, main = names(datalist)[i])
+      }
+    }
+    
   }
 
 }
@@ -81,10 +112,10 @@ heatdata<-function(datalist, dirname, genes = NULL, cellinfo = NULL, rowv = FALS
 #' @import viridis
 #' @export
 # plot the gene correlation matrix
-heatgcn<-function(gcnlist, dirname, geneinfo = NULL,
-                  clustk = 9, ord = NULL,
+heatgcn<-function(gcnlist, dirname = NULL, geneinfo = NULL,
+                  ord = NULL,
                   maxgcn = 1, mingcn = -1, abs = FALSE,
-                  color="-RdBu:100", extrainfo = NULL, breaks = 0){
+                  color="-RdBu:100", extrainfo = NULL, breaks = 0, ncol = 4, size = 2){
 
   if(sum(mean(sapply(gcnlist, nrow))!=sapply(gcnlist, nrow))>0){
     for(i in 2:length(gcnlist)){
@@ -100,34 +131,55 @@ heatgcn<-function(gcnlist, dirname, geneinfo = NULL,
     d = stats::as.dist((1-gcnlist[[1]])/2)
     h = stats::hclust(d)
     ord = h$order
-    memb <- cutree(h, k = clustk)
+    #memb <- cutree(h, k = clustk)
     if(!is.null(geneinfo)){
-      type = data.frame(TypeC = as.factor(memb[ord]), TypeG = geneinfo$newcelltype[ord])
+      #type = data.frame(TypeC = as.factor(memb[ord]), TypeG = geneinfo$newcelltype[ord])
+      type = data.frame("Gene Type" = geneinfo$newcelltype[ord])
       genecolors =  brewer.pal(n = length(levels(as.factor(geneinfo$newcelltype))), name = "Set1")
-      genecolors[which(levels(geneinfo$newcelltype)=="None")]="gray48"
-      clustcolors = viridis_pal(option = "D")(clustk)
-      colr = list(TypeC =  clustcolors, TypeG = genecolors)
+      genecolors[which(levels(geneinfo$newcelltype)=="None")]="gray70"
+      #clustcolors = viridis_pal(option = "D")(clustk)
+      #colr = list(TypeC =  clustcolors, TypeG = genecolors)
+      colr = list("Gene.Type" = genecolors)
     }
     else{
-      type = data.frame(TypeC = as.factor(memb[ord]))
-      clustcolors = viridis_pal(option = "D")(clustk)
-      colr = list(TypeC =  clustcolors)
-    }
+      type = NA
+      colr  = NA
+      }
+    # else{
+    #   type = data.frame(TypeC = as.factor(memb[ord]))
+    #   clustcolors = viridis_pal(option = "D")(clustk)
+    #   colr = list(TypeC =  clustcolors)
+    # }
   }
   else{
-    type = data.frame(TypeG = geneinfo$newcelltype[ord])
+    type = data.frame("Gene Type" = geneinfo$newcelltype[ord])
     genecolors =  brewer.pal(n = length(levels(as.factor(geneinfo$newcelltype))), name = "Set1")
-    genecolors[which(levels(geneinfo$newcelltype)=="None")]="gray48"
-    colr = list(TypeG = genecolors)
+    genecolors[which(levels(geneinfo$newcelltype)=="None")]="gray70"
+    colr = list("Gene.Type" = genecolors)
   }
 
   if(abs&!is.null(mingcn))mingcn = 0
-  for(i in 1:length(gcnlist)){
-    gcn = gcnlist[[i]]
-    aheatmap(gcn[ord, ord],  Rowv = NA, Colv = NA,
-             color = color, breaks = seq(mingcn, maxgcn,length.out = 101),
-             annCol = type, annColors = colr,
-             filename = paste0(dirname, "gcn_", names(gcnlist)[i], extrainfo, ".pdf") )
+  if(!is.null(dirname)){
+    for(i in 1:length(gcnlist)){
+      gcn = gcnlist[[i]]
+    
+      aheatmap(gcn[ord, ord],  Rowv = NA, Colv = NA,
+               color = color, breaks = seq(mingcn, maxgcn,length.out = 101),
+               annCol = type, annColors = colr, cellwidth = size, cellheight = size, 
+               filename = paste0(dirname, "gcn_", names(gcnlist)[i], extrainfo, ".pdf") )
+    }
+  }   
+  else{
+    par(mfrow = c(ceiling(length(gcnlist)/ncol), ncol))
+    for(i in 1:length(gcnlist)){
+      gcn = gcnlist[[i]]
+      legend = FALSE
+      if(i==length(gcnlist))legend = TRUE
+      aheatmap(gcn[ord, ord],  Rowv = NA, Colv = NA,
+               color = color, breaks = seq(mingcn, maxgcn, length.out = 101),
+               annCol = type, cellwidth = size, cellheight = size, legend = legend, annLegend = legend, annColors = colr, main = paste0(names(gcnlist)[i], " ", extrainfo))
+      
+    }
   }
 }
 

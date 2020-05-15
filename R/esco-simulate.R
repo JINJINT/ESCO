@@ -196,7 +196,7 @@ escoSimulate <- function(params = newescoParams(),
     sim <- SingleCellExperiment(rowData = features, colData = cells,
                                 metadata = list(Params = params))
 
-    if (type != "single") {
+    if (type %in% c("groups", "tree")) {
         groups <- sample(seq_len(nGroups), nCells, prob = group.prob,
                          replace = TRUE)
         colData(sim)$Group <- group.names[groups]
@@ -248,7 +248,7 @@ escoSimulate <- function(params = newescoParams(),
     
     if(!dir.exists(dirname)){
       if (verbose) message("Adding technical noise ...")
-      if(dropout.type!="none"){
+      if(length(dropout.type)>0){
         if("zeroinflate" %in% dropout.type)sim<-Observed_Counts(sim, "", verbose) 
         if("downsample" %in% dropout.type)sim<-escoSimDropout(sim, "", verbose)
       }
@@ -581,6 +581,7 @@ escoSimTreeDE <- function(sim, verbose) {
 
   markers[deall.genes] = 1
   treecor <- vcv.phylo(tree, cor=T)
+  treecor = sqrt(treecor)
   de.facLocvec = matrix(0, nGenes, nGroups)
   de.facLocvec[deall.genes,] <- mvrnorm(length(deall.genes), rep(de.center, nGroups), treecor)
   for(idx in seq_len(nGroups)){

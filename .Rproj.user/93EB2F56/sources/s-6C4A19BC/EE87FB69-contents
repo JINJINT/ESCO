@@ -27,8 +27,15 @@ sim<-escoSimulateSingle(nGenes = 50, nCells = 20, dropout.type = "downsample",
 #===== simulating one cell group with no gene-gene correlation
 
 # simulating one cell group with randomized gene-gene correlation
-sim <- escoSimulateSingle(nGenes = 50, nCells = 20, 
+sim <- escoSimulateSingle(nGenes = 100, nCells = 50, lib.loc = 8,
                          trials = 1, withcorr = TRUE)
+
+heatdata(list(simsin = assays(sim)$TrueCounts), maxdata = 12,dirname = plotdir)
+rholist = metadata(sim)$Params@corr
+heatgcn(list(simrealsinnone = gcn(assays(sim)$TrueCounts,
+                                 CPM = TRUE, name = "pearson",
+                                 genes = setdiff(rownames(assays(sim)$TrueCounts), rownames(rholist[[1]])) )), dirname = plotdir)
+
 
 # simulating one cell group with given gene-gene correlation
 sim<-escoSimulateSingle(nGenes = 50, nCells = 20, 
@@ -55,13 +62,61 @@ sim<-escoSimulateGroups(nGenes = 100, nCells = 50,
 
 
 # simulating mutiple cell group with randomized gene-gene correlation
-sim<-escoSimulateGroups(nGenes = 100, nCells = 50, 
-                         group.prob = c(0.5, 0.5), deall.prob = 0.3, 
-                         house.prob = 0.05, de.prob = c(0.3, 0.7),
-                         de.facLoc = c(2, 1), 
+sim<-escoSimulateGroups(nGenes = 1000, nCells = 500, 
+                         group.prob = c(0.3, 0.1, 0.6), deall.prob = 0.3, 
+                         house.prob = 0.05, de.prob = c(0.3, 0.7, 0.4),
+                         de.facLoc = c(2, 1, 1.5), dropout.type = "none",
                          withcorr = TRUE,
                          trials = 1)
 
+umapplot(t(t(assays(sim)$TrueCounts)/colSums(assays(sim)$TrueCounts)), 
+         celltype = colData(sim)$Group, 
+         labels = levels(as.factor(colData(sim)$Group)),
+         config = config)
+
+simtruedata = assays(sim)$TrueCounts
+for(i in 1:length(unique(rowData(sim)$GeneGroup))){
+  if(i==1)rowData(sim)$GeneGroup[which(rowData(sim)$GeneGroup==i-1)] = "None"
+  else rowData(sim)$GeneGroup[which(rowData(sim)$GeneGroup==i-1)] = paste0("Group",i-1)
+}
+simdegenes = rownames(simtruedata)[which(rowData(sim)$GeneGroup!="None")]
+simdegeneinfo = data.frame(genes = simdegenes, 
+                           newcelltype = as.factor(rowData(sim)$GeneGroup[which(rowData(sim)$GeneGroup!="None")]))
+
+heatdata(list(simre = simtruedata), simdegenes, 
+         cellinfo = data.frame(çells = colnames(simdata), 
+                                newcelltype = as.factor(colData(sim)$Group)), 
+         geneinfo = simdegeneinfo, 
+         maxdata = 12,
+         dirname = plotdir)
+
+heatgcn(list(simreal = gcn(simtruedata, CPM = TRUE, name = "pearson", genes = simdegenes)), 
+        geneinfo = simdegeneinfo, dirname = plotdir)
+
+rholist = metadata(sim)$Params@corr
+
+heatgcn(list(simrealrho1 = rholist[[2]],
+             simrealgroup1 = gcn(simtruedata[,which(colData(sim)$Group=="Group1")],
+                                 CPM = TRUE, CPM2 = TRUE,  name = "pearson",
+                                 genes = rownames(rholist[[2]]))),
+        dirname = plotdir)
+heatgcn(list(simrealrho2 = rholist[[3]],
+             simrealgroup2 = gcn(simtruedata[,which(colData(sim)$Group=="Group2")],
+                                 CPM = TRUE, CPM2 = TRUE, name = "pearson",
+                                 genes = rownames(rholist[[3]]))),
+        dirname = plotdir)
+heatgcn(list(simrealrho3 = rholist[[4]],
+             simrealgroup3 = gcn(simtruedata[,which(colData(sim)$Group=="Group3")],
+                                 CPM = TRUE, CPM2 = TRUE, name = "pearson",
+                                 genes = rownames(rholist[[4]]))),
+        dirname = plotdir)
+
+allcorr = unlist(lapply(rholist, rownames))
+none = setdiff(rownames(simtruedata), allcorr)
+heatgcn(list(simrealgroupnone = gcn(simtruedata,
+                                 CPM = TRUE, CPM2 = TRUE, name = "pearson",
+                                 genes = sample(none,100)) ),
+        dirname = plotdir)
 
 
 
@@ -84,25 +139,12 @@ data(geneinfo) #geneinfo
 cells = colnames(zeisel_subnorm)
 subcellinfo = droplevels(cellinfo$newcelltype[match(cells, cellinfo$cell)])
 subcellinfo = data.frame(cell = cells, newcelltype = subcellinfo)
-# cells  = as.character(subcellinfo$cell[which(subcellinfo$newcelltype!="microglia")])
-# zeisel_sub = zeisel_sub[,cells]
-# subcellinfo = droplevels(subcellinfo$newcelltype[match(cells, subcellinfo$cell)])
-# subcellinfo = data.frame(cell = cells, newcelltype = subcellinfo)
 for(i in 1:3){
    subcells = as.character(subcellinfo$cell[which(subcellinfo$newcelltype==levels(subcellinfo$newcelltype)[i])])
    zeisel_subnorm[,subcells] = mean(colSums(zeisel_subnorm))/mean(colSums(zeisel_subnorm[,subcells]))*zeisel_subnorm[,subcells]
  }
 
 devtools::load_all()
-
-
-        
-
-#zeisel_sub = zeisel_sub[which(subgeneinfo$newcelltype%in%c()),]
-
-#genes  = subgeneinfo$genes[which(subgeneinfo$newcelltype!="")]
-#de.facLoc = getParam(params, "de.facLoc")
-#params<-setParams(params, de.facLoc = 0.3*de.facLoc)
 
 params <- escoEstimate(zeisel_subnorm, dirname = "/Users/jinjin/Desktop/result/", 
                         cellinfo = subcellinfo$newcelltype, group = TRUE)

@@ -3,7 +3,7 @@
 #' @import ggplot2
 #' @export
 gcn<-function(count, genes = NULL, CPM = TRUE, CPM2 = FALSE, 
-              name = c("pearson", "spearman", "bigscale", "cosine", "kendall"), fast = FALSE){
+              name = c("pearson"), fast = FALSE){
   if(is.null(genes))genes = rownames(count)
   if(length(name)>1)name = "pearson"
   if(name=="bigscale")gcn = as.numeric(compute.network(count[genes,], rownames(count[genes,]), clustering = "recursive", quantile.p = 0.999)$correlations)
