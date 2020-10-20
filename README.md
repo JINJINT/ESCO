@@ -1,7 +1,7 @@
 # SplatterModify
 
 
-Welcome to ``SplatterModify``! ``SplatterModify`` is an R package for the simple simulation of
+Welcome to ``SplatterESCO``! ``SplatterESCO`` is an R package for the simple simulation of
 single-cell RNA sequencing data, built upon the `splatter` package, with newly added methods ``ESCO`` for simulating gene co-expression.
 
 
