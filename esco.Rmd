@@ -22,7 +22,7 @@ knitr::opts_chunk$set(fig.align = 'center',
 options(BiocSingularParam.default = BiocSingular::ExactParam())
 setwd("~/SplatterESCO")
 devtools::load_all()
-showdir = "./show"
+showdir = "./show/"
 if(!dir.exists(showdir))dir.create(showdir)
 ```
 
@@ -79,7 +79,7 @@ Additionally, in order to have better reproducibility, ESCO also allows multiple
 if(!dir.exists(paste0(showdir,"case1")))
   dir.create(paste0(showdir,"case1"))
 sim <- escoSimulate(nGenes = 100, nCells  = 50, 
-                    trials = 5, 
+                    trials = 2, 
                     dirname = paste0(showdir,"case1/"), 
                     verbose = FALSE)
 list.files(path = paste0(showdir,"case1/"), full.names = FALSE)
