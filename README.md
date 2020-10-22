@@ -4,9 +4,9 @@
 Welcome to ``SplatterESCO``! ``SplatterESCO`` is an R package for the simple simulation of
 single-cell RNA sequencing data, built upon the `splatter` package, with newly added methods ``ESCO`` for simulating gene co-expression.
 
-Check out our paper
+Check out our paper here:
 
-\href{https://www.biorxiv.org/content/10.1101/2020.10.20.347211v1}{ESCO: single cell expression simulation incorporating gene co-expression}.
+[ESCO: single cell expression simulation incorporating gene co-expression.](https://www.biorxiv.org/content/10.1101/2020.10.20.347211v1)
 
 [scater]: https://github.com/davismcc/scater
 [SCE]: https://github.com/drisso/SingleCellExperiment
