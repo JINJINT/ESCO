@@ -1,4 +1,4 @@
-Package: SplatterModify
+Package: SplatterESCO
 Type: Package
 Title: Simple Simulation of Single-cell RNA Sequencing Data with gene co-expression
 Version: 0.1.0

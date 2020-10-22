@@ -20,24 +20,24 @@ knitr::opts_chunk$set(fig.align = 'center',
 
 # Use exact BSPARAM to avoid warnings
 options(BiocSingularParam.default = BiocSingular::ExactParam())
-setwd("/Users/jinjin/Desktop/GCN_singlecell/simulators/SplatterModify")
+setwd("~/SplatterESCO")
 devtools::load_all()
-showdir = "/Users/jinjin/Desktop/GCN_singlecell/show/"
+showdir = "./show"
 if(!dir.exists(showdir))dir.create(showdir)
 ```
 
-Welcome to ``SplatterModify``! ``SplatterModify`` is an R package for the simple simulation of
+Welcome to ``SplatterESCO``! ``SplatterESCO`` is an R package for the simple simulation of
 single-cell RNA sequencing data, built upon the `splatter` package, with newly added methods ESCO for simulating gene co-expression. This vignette gives an overview and introduction to ESCO's functionality.
 
 # Installation
 
-``SplatterModify`` can be download from Github:
-         https://github.com/JINJINT/SplatterModify
+``SplatterESCO`` can be download from Github:
+         https://github.com/JINJINT/SplatterESCO
 
 # Overview
 
 We use the term 'ESCO' to refer
-to the newly proposed Ensemble single cell simulator with gene co-expression, and differentiate it from the package SplatterModify itself. As for the marginal behaviour of genes and cells, the core of the ESCO model is foundimentally the same with the original Splat: they both use a gamma-Poisson distribution with a enforced mean-variance trend to generate gene counts, and use a log-normal/normal distribution to give an expected library size for each cell, while outlier genes (genes with mean expression outside the gamma
+to the newly proposed Ensemble single cell simulator with gene co-expression, and differentiate it from the package SplatterESCO itself. As for the marginal behaviour of genes and cells, the core of the ESCO model is foundimentally the same with the original Splat: they both use a gamma-Poisson distribution with a enforced mean-variance trend to generate gene counts, and use a log-normal/normal distribution to give an expected library size for each cell, while outlier genes (genes with mean expression outside the gamma
 distribution) and dropouts (random knock out of counts based on mean expression) are introduced along the way. 
 
 ESCO can also simulate differential expression between groups of different

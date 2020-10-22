@@ -4,12 +4,12 @@
 \alias{escoSimPathDE}
 \title{Simulate escosplat paths}
 \usage{
-escoSimPathDE(params, verbose)
+escoSimPathDE(sim, verbose)
 }
 \arguments{
-\item{params}{escoParams object containing simulation parameters.}
-
 \item{verbose}{logical. Whether to print progress messages}
+
+\item{params}{escoParams object containing simulation parameters.}
 }
 \value{
 KersplatParams object with path means

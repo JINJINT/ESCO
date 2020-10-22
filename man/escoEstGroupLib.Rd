@@ -4,7 +4,7 @@
 \alias{escoEstGroupLib}
 \title{Estimate esco library size parameters}
 \usage{
-escoEstGroupLib(counts, cellinfo, params)
+escoEstGroupLib(counts, cellinfo = NULL, params)
 }
 \arguments{
 \item{counts}{counts matrix to estimate parameters from.}
