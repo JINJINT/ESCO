@@ -1,4 +1,4 @@
-# SplatterModify
+# SplatterESCO
 
 
 Welcome to ``SplatterESCO``! ``SplatterESCO`` is an R package for the simple simulation of
