@@ -1,4 +1,4 @@
-Package: SplatterESCO
+Package: ESCO
 Type: Package
 Title: Simple Simulation of Single-cell RNA Sequencing Data with gene co-expression
 Version: 0.1.0
@@ -9,7 +9,7 @@ Authors@R:
       email = "jinjint@andrew.cmu.edu"
       ))
 Maintainer: Jinjin Tian <jinjint@andrew.cmu.au>
-Description: This package is forked from package Splatter, which is a package for the simulation of single-cell RNA
+Description: This package borrowed the infrastructure from package splatter, which is a package for the simulation of single-cell RNA
     sequencing count data. This new pacakge allows users to simulate single cell data with any given correlations among genes, 
     while allowing discrete / tree-structured cell groups and smooth trajectories. It provides a simple interface 
     for creating complex simulations that are reproducible and well-documented. Most parameters can be

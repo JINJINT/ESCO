@@ -9,7 +9,7 @@ newescoParams <- function(...) {
     return(params)
 }
 
-#' @importFrom checkmate checkInt checkIntegerish checkNumber checkNumeric
+#' @importFrom checkmate checkInt checkIntegerish checkNumber checkNumeric checkCharacter
 #' checkFlag
 setValidity("escoParams", function(object) {
 

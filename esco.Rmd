@@ -20,19 +20,19 @@ knitr::opts_chunk$set(fig.align = 'center',
 
 # Use exact BSPARAM to avoid warnings
 options(BiocSingularParam.default = BiocSingular::ExactParam())
-setwd("~/SplatterESCO")
+setwd("~/ESCO")
 devtools::load_all()
 showdir = "./show/"
 if(!dir.exists(showdir))dir.create(showdir)
 ```
 
-Welcome to ``SplatterESCO``! ``SplatterESCO`` is an R package for the simple simulation of
-single-cell RNA sequencing data, built upon the `splatter` package, with newly added methods ESCO for simulating gene co-expression. This vignette gives an overview and introduction to ESCO's functionality.
+Welcome to ``ESCO``! ``ESCO`` is an R package for the simple simulation of
+single-cell RNA sequencing data with special focus on gene co-expression, built using the infrastructure of the `splatter` package. This vignette gives an overview and introduction to ESCO's functionality.
 
 # Installation
 
-``SplatterESCO`` can be download from Github:
-         https://github.com/JINJINT/SplatterESCO
+``ESCO`` can be download from Github:
+         https://github.com/JINJINT/ESCO
 
 # Overview
 
