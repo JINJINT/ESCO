@@ -4,6 +4,9 @@
 Welcome to ``ESCO``! ``ESCO`` is an R package for the simulation of
 single-cell RNA sequencing data with special consideration of gene co-expression, built ultilizing the infrastructure the [`splatter`](https://github.com/Oshlack/splatter) package. This package formerly known as `SplatterESCO`.
 
-Check out our paper for ESCO here:
+## Quick start:
+Check out our [tutorial](https://www.dropbox.com/s/yk7bs1jpyd41m8i/esco.html?dl=0) for ESCO.
 
+## Papers:
+Check out our paper for ESCO here:
 [ESCO: single cell expression simulation incorporating gene co-expression.](https://www.biorxiv.org/content/10.1101/2020.10.20.347211v1)
