@@ -20,5 +20,6 @@ The Params class defines the following parameters:
 }
 
 The parameters not shown in brackets can be estimated from real data.
+This function is borrowed from splatter.
 }
 

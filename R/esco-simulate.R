@@ -1351,7 +1351,7 @@ Observed_Counts <- function(sim, trial, verbose, numCores =2, protocol = "UMI", 
   }
 
 
-#' Simulate technical biases 
+#' Simulate technical biases using methods in SymSim
 #' @param lenslope amount of length bias. This value sould be less than 2*amp_bias_limit[2]/(nbins-1)
 #' @param nbins number of bins for gene length
 #' @param gene_len transcript length of each gene
@@ -1388,7 +1388,7 @@ cal_amp_bias <- function(lenslope, nbins, gene_len, amp_bias_limit){
 }
 
 
-#' This function simulates the amplification, library prep, and the sequencing processes.
+#' This function simulates the amplification, library prep, and the sequencing processes using methods in SymSim.
 #' @param true_counts_1cell the true transcript counts for one cell (one vector)
 #' @param protocol a string, can be "nonUMI" or "UMI"
 #' @param rate_2cap the capture efficiency for this cell
@@ -1525,7 +1525,7 @@ amplify_cell<- function(true_counts_1cell, protocol, rate_2cap, gene_len, amp_bi
   }
 }
 
-#' sample from truncated normal distribution
+#' sample from truncated normal distribution (this function is borrowed from splatter)
 #' @param a the minimum value allowed 
 #' @param b the maximum value allowed
 #' @export
@@ -1547,7 +1547,7 @@ rnorm_truc <- function(n, mean, sd, a, b){
 
 #' Get Beta step probabilities
 #'
-#' Use a Beta distribution for set probabilities along a path
+#' Use a Beta distribution for set probabilities along a path (this function is borrowed from splatter)
 #'
 #' @param steps Number of steps
 #' @param alpha Alpha parameter
@@ -1585,7 +1585,7 @@ getBetaStepProbs <- function(steps, alpha, beta) {
 
 #' Sample density
 #'
-#' Sample from a density object using rejection sampling
+#' Sample from a density object using rejection sampling (this function is borrowed from splatter)
 #'
 #' @param n Number of values to sample
 #' @param dens Density object to sample from
@@ -1673,7 +1673,7 @@ randcor <- function(ngenes){
 
 #' Logistic function
 #'
-#' Implementation of the logistic function
+#' Implementation of the logistic function (this function is borrowed from splatter)
 #'
 #' @param x value to apply the function to.
 #' @param x0 midpoint parameter. Gives the centre of the function.
@@ -1687,7 +1687,7 @@ logistic <- function(x, x0, k) {
 #' Bind rows (matched)
 #'
 #' Bind the rows of two data frames, keeping only the columns that are common
-#' to both.
+#' to both (this function is borrowed from splatter).
 #'
 #' @param df1 first data.frame to bind.
 #' @param df2 second data.frame to bind.
@@ -1706,7 +1706,7 @@ rbindMatched <- function(df1, df2) {
 
 #' Winsorize vector
 #'
-#' Set outliers in a numeric vector to a specified percentile.
+#' Set outliers in a numeric vector to a specified percentile (this function is borrowed from splatter).
 #'
 #' @param x Numeric vector to winsorize
 #' @param q Percentile to set from each end

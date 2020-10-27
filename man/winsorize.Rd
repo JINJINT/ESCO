@@ -23,7 +23,7 @@ Winsorized numeric vector
 Winsorized numeric vector
 }
 \description{
-Set outliers in a numeric vector to a specified percentile.
+Set outliers in a numeric vector to a specified percentile (this function is borrowed from splatter).
 
-Set outliers in a numeric vector to a specified percentile.
+Set outliers in a numeric vector to a specified percentile (this function is borrowed from splatter).
 }

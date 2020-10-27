@@ -2,10 +2,12 @@
 % Please edit documentation in R/classes.R
 \name{setParams}
 \alias{setParams}
-\title{Set parameters}
+\title{this function is borrowed from Splatter
+Set parameters}
 \usage{
 setParams(object, update = NULL, ...)
 }
 \description{
+this function is borrowed from Splatter
 Set parameters
 }

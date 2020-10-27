@@ -27,7 +27,7 @@ Value of logistic funciton with given parameters
 Value of logistic funciton with given parameters
 }
 \description{
-Implementation of the logistic function
+Implementation of the logistic function (this function is borrowed from splatter)
 
-Implementation of the logistic function
+Implementation of the logistic function (this function is borrowed from splatter)
 }

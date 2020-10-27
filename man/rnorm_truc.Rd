@@ -2,7 +2,7 @@
 % Please edit documentation in R/esco-simulate.R
 \name{rnorm_truc}
 \alias{rnorm_truc}
-\title{sample from truncated normal distribution}
+\title{sample from truncated normal distribution (this function is borrowed from splatter)}
 \usage{
 rnorm_truc(n, mean, sd, a, b)
 }
@@ -12,5 +12,5 @@ rnorm_truc(n, mean, sd, a, b)
 \item{b}{the maximum value allowed}
 }
 \description{
-sample from truncated normal distribution
+sample from truncated normal distribution (this function is borrowed from splatter)
 }

@@ -17,7 +17,7 @@ getBetaStepProbs(steps, alpha, beta)
 Vector of probabilities
 }
 \description{
-Use a Beta distribution for set probabilities along a path
+Use a Beta distribution for set probabilities along a path (this function is borrowed from splatter)
 }
 \details{
 The density is sampled from a Beta distribution between 0 and 1. Infinite

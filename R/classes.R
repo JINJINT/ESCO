@@ -13,7 +13,7 @@
 #' }
 #'
 #' The parameters not shown in brackets can be estimated from real data.
-#'
+#' This function is borrowed from splatter.
 #' @name Params
 #' @rdname Params
 #' @aliases Params-class
@@ -274,7 +274,7 @@ setClass("escoParams",
 
 #' Get parameters
 #'
-#' Get multiple parameter values from a Params object.
+#' Get multiple parameter values from a Params object (this function is borrowed from splatter).
 #'
 #' @param params Params object to get values from.
 #' @param names vector of names of the parameters to get.
@@ -295,7 +295,7 @@ getParams <- function(params, names) {
 }
 #' Set parameters UNCHECKED
 #'
-#' Set multiple parameters in a Params object.
+#' Set multiple parameters in a Params object (this function is borrowed from splatter).
 #'
 #' @param params Params object to set parameters in.
 #' @param update list of parameters to set where \code{names(update)} are the
@@ -330,7 +330,7 @@ setParamsUnchecked <- function(params, update = NULL, ...) {
 
 #' Show pretty print
 #'
-#' Function used for pretty printing params object.
+#' Function used for pretty printing params object (this function is borrowed from splatter).
 #'
 #' @param params object to show.
 #' @param pp list specifying how the object should be displayed.
@@ -370,7 +370,7 @@ showPP <- function(params, pp) {
 
 #' Show values
 #'
-#' Function used for pretty printing scalar or vector parameters.
+#' Function used for pretty printing scalar or vector parameters (this function is borrowed from splatter).
 #'
 #' @param values list of values to show.
 #' @param not.default logical vector giving which have changed from the default.
@@ -433,7 +433,7 @@ showValues <- function(values, not.default) {
   }
 }
 
-#' Show data.frame
+#' Show data.frame (this function is borrowed from splatter)
 #'
 #' Function used for pretty printing data.frame parameters.
 #'
@@ -476,42 +476,47 @@ showDFs <- function(dfs, not.default) {
   }
 }
 
-
+#' this function is borrowed from Splatter
 #' Set a parameter UNCHECKED
 setGeneric("setParamUnchecked", function(object, name, value) {
   standardGeneric("setParamUnchecked")
 })
 
-
+#' this function is borrowed from Splatter
 #' Get a parameter
 setGeneric("getParam", function(object, name) {standardGeneric("getParam")})
 
+#' this function is borrowed from Splatter
 #' Set a parameter
 setGeneric("setParam", function(object, name, value) {
   standardGeneric("setParam")
 })
 
+#' this function is borrowed from Splatter
 #' Set a parameter UNCHECKED
 setGeneric("setParamUnchecked", function(object, name, value) {
   standardGeneric("setParamUnchecked")
 })
 
+#' this function is borrowed from Splatter
 #' Set parameters
 setGeneric("setParams", function(object, update = NULL, ...) {
   standardGeneric("setParams")
 })
 
+#' this function is borrowed from Splatter
 #' Expand parameters
 setGeneric("expandParams", function(object, ...) {
   standardGeneric("expandParams")
 })
 
-
+#' this function is borrowed from Splatter
 #' @importFrom methods slot
 setMethod("getParam", "Params", function(object, name) {
   slot(object, name)
 })
 
+#' this function is borrowed from Splatter
 #' @importFrom methods slot<- validObject
 setMethod("setParam", "Params", function(object, name, value) {
   checkmate::assertString(name)
@@ -520,6 +525,7 @@ setMethod("setParam", "Params", function(object, name, value) {
   return(object)
 })
 
+#' this function is borrowed from Splatter
 #' @importFrom methods slot<-
 setMethod("setParamUnchecked", "Params", function(object, name, value) {
   checkmate::assertString(name)
@@ -527,6 +533,7 @@ setMethod("setParamUnchecked", "Params", function(object, name, value) {
   return(object)
 })
 
+#' this function is borrowed from Splatter
 setMethod("setParams", "Params", function(object, update = NULL, ...) {
   
   checkmate::assertClass(object, classes = "Params")
@@ -544,6 +551,7 @@ setMethod("setParams", "Params", function(object, update = NULL, ...) {
   return(object)
 })
 
+#' this function is borrowed from Splatter
 #' @importFrom methods slotNames
 setMethod("show", "Params", function(object) {
   
@@ -562,6 +570,7 @@ setMethod("show", "Params", function(object) {
   cat(length(slotNames(object)) - 3, "additional parameters", "\n\n")
 })
 
+#' this function is borrowed from Splatter
 setMethod("expandParams", "Params", function(object, vectors, n) {
   
   update <- list()

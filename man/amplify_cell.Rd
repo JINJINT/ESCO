@@ -2,7 +2,7 @@
 % Please edit documentation in R/esco-simulate.R
 \name{amplify_cell}
 \alias{amplify_cell}
-\title{This function simulates the amplification, library prep, and the sequencing processes.}
+\title{This function simulates the amplification, library prep, and the sequencing processes using methods in SymSim.}
 \usage{
 amplify_cell(true_counts_1cell, protocol, rate_2cap, gene_len, amp_bias,
   rate_2PCR, nPCR1, nPCR2, LinearAmp, LinearAmp_coef, N_molecules_SEQ)
@@ -32,5 +32,5 @@ amplify_cell(true_counts_1cell, protocol, rate_2cap, gene_len, amp_bias,
 read counts (if protocol="nonUMI") or UMI counts (if protocol="UMI)
 }
 \description{
-This function simulates the amplification, library prep, and the sequencing processes.
+This function simulates the amplification, library prep, and the sequencing processes using methods in SymSim.
 }

@@ -2,10 +2,12 @@
 % Please edit documentation in R/classes.R
 \name{expandParams}
 \alias{expandParams}
-\title{Expand parameters}
+\title{this function is borrowed from Splatter
+Expand parameters}
 \usage{
 expandParams(object, ...)
 }
 \description{
+this function is borrowed from Splatter
 Expand parameters
 }

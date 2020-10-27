@@ -165,7 +165,7 @@ setMethod("show", "escoParams", function(object) {
     showPP(object, pp)
 })
 
-
+#' this function is borrowed from splatter
 setMethod("expandParams", "escoParams", function(object) {
 
     n <- getParam(object, "nGroups")
@@ -177,7 +177,7 @@ setMethod("expandParams", "escoParams", function(object) {
     return(object)
 })
 
-
+#' this function is borrowed from splatter
 setMethod("setParams", "escoParams", function(object, update = NULL, ...) {
     
     checkmate::assertClass(object, classes = "escoParams")
@@ -192,7 +192,7 @@ setMethod("setParams", "escoParams", function(object, update = NULL, ...) {
     return(object)
 })
 
-#' Bring items forward
+#' Bring items forward (this function is borrowed from splatter)
 #'
 #' Move selected items to the start of a list.
 #'

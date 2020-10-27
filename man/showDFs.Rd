@@ -2,7 +2,7 @@
 % Please edit documentation in R/classes.R
 \name{showDFs}
 \alias{showDFs}
-\title{Show data.frame}
+\title{Show data.frame (this function is borrowed from splatter)}
 \usage{
 showDFs(dfs, not.default)
 }

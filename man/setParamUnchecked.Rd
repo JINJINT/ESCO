@@ -2,14 +2,17 @@
 % Please edit documentation in R/classes.R
 \name{setParamUnchecked}
 \alias{setParamUnchecked}
-\title{Set a parameter UNCHECKED}
+\title{this function is borrowed from Splatter
+Set a parameter UNCHECKED}
 \usage{
 setParamUnchecked(object, name, value)
 
 setParamUnchecked(object, name, value)
 }
 \description{
+this function is borrowed from Splatter
 Set a parameter UNCHECKED
 
+this function is borrowed from Splatter
 Set a parameter UNCHECKED
 }

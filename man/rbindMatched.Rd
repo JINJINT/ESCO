@@ -26,8 +26,8 @@ data.frame containing rows from \code{df1} and \code{df2} but only
 }
 \description{
 Bind the rows of two data frames, keeping only the columns that are common
-to both.
+to both (this function is borrowed from splatter).
 
 Bind the rows of two data frames, keeping only the columns that are common
-to both.
+to both (this function is borrowed from splatter).
 }

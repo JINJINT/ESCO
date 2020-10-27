@@ -15,7 +15,7 @@ getParams(params, names)
 List with the values of the selected parameters.
 }
 \description{
-Get multiple parameter values from a Params object.
+Get multiple parameter values from a Params object (this function is borrowed from splatter).
 }
 \examples{
 params <- newSimpleParams()

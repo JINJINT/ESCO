@@ -2,10 +2,12 @@
 % Please edit documentation in R/classes.R
 \name{getParam}
 \alias{getParam}
-\title{Get a parameter}
+\title{this function is borrowed from Splatter
+Get a parameter}
 \usage{
 getParam(object, name)
 }
 \description{
+this function is borrowed from Splatter
 Get a parameter
 }

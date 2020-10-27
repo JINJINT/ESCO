@@ -15,5 +15,5 @@ showValues(values, not.default)
 Print values
 }
 \description{
-Function used for pretty printing scalar or vector parameters.
+Function used for pretty printing scalar or vector parameters (this function is borrowed from splatter).
 }

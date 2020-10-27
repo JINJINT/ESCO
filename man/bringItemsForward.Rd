@@ -2,7 +2,7 @@
 % Please edit documentation in R/escoParams-methods.R
 \name{bringItemsForward}
 \alias{bringItemsForward}
-\title{Bring items forward}
+\title{Bring items forward (this function is borrowed from splatter)}
 \usage{
 bringItemsForward(ll, items)
 }

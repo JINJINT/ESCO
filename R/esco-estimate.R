@@ -709,7 +709,7 @@ escoEstDropout <- function(norm.counts, params) {
 
 #' Logistic function
 #'
-#' Implementation of the logistic function
+#' Implementation of the logistic function (this function is borrowed from splatter)
 #'
 #' @param x value to apply the function to.
 #' @param x0 midpoint parameter. Gives the centre of the function.
@@ -723,7 +723,7 @@ logistic <- function(x, x0, k) {
 #' Bind rows (matched)
 #'
 #' Bind the rows of two data frames, keeping only the columns that are common
-#' to both.
+#' to both (this function is borrowed from splatter).
 #'
 #' @param df1 first data.frame to bind.
 #' @param df2 second data.frame to bind.
@@ -742,11 +742,10 @@ rbindMatched <- function(df1, df2) {
 
 #' Winsorize vector
 #'
-#' Set outliers in a numeric vector to a specified percentile.
+#' Set outliers in a numeric vector to a specified percentile (this function is borrowed from splatter).
 #'
 #' @param x Numeric vector to winsorize
 #' @param q Percentile to set from each end
-#'
 #' @return Winsorized numeric vector
 winsorize <- function(x, q) {
   
