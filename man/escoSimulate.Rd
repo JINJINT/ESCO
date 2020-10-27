@@ -5,11 +5,11 @@
 \alias{escoSimulateSingle}
 \alias{escoSimulateGroups}
 \alias{escoSimulateTree}
-\alias{escoSimulatePath}
+\alias{escoSimulateTraj}
 \title{ESCO simulation}
 \usage{
-escoSimulate(params = newescoParams(), type = c("single", "groups",
-  "tree", "path"), verbose = TRUE, ...)
+escoSimulate(params = newescoParams(), type = c("single", "group",
+  "tree", "traj"), verbose = TRUE, numCores = 2, ...)
 
 escoSimulateSingle(params = newescoParams(), verbose = TRUE, ...)
 
@@ -17,18 +17,19 @@ escoSimulateGroups(params = newescoParams(), verbose = TRUE, ...)
 
 escoSimulateTree(params = newescoParams(), verbose = TRUE, ...)
 
-escoSimulatePath(params = newescoParams(), verbose = TRUE, ...)
+escoSimulateTraj(params = newescoParams(), verbose = TRUE, ...)
 }
 \arguments{
 \item{type}{which type of heterogenounity to use. Options are :
 "single" which produces a single population;
-"groups" which produces distinct groups (eg. cell types);
-"trees"  which produces distinct groups but admits a tree structure.}
+"group" which produces distinct groups;
+"tree"  which produces distinct groups but admits a tree structure;
+"traj"  which produces distinct groups but admits a smooth trajectory structure.}
 
 \item{verbose}{logical. Whether to print progress messages.}
 
 \item{...}{any additional parameter settings to override what is provided in
-\code{params}.}
+\code{\link{params}}.}
 }
 \value{
 SingleCellExperiment object containing the simulated counts and
@@ -36,11 +37,12 @@ intermediate values.
 }
 \description{
 Simulate count data from a fictional single-cell RNA-seq experiment using
-the ESCO method.
+the hierarchical copula model.
 }
 \details{
 Parameters can be set in a variety of ways. If no parameters are provided
-the default parameters are used. Any parameters in \code{params} can be
+the default parameters are used. We adopts the way in splatter to set up parameters, particularly, 
+any parameters in \code{\link{params}} can be
 overridden by supplying additional arguments through a call to
 \code{\link{setParams}}. This design allows the user flexibility in
 how they supply parameters and allows small adjustments without creating a
@@ -52,10 +54,10 @@ The simulation involves the following steps:
     \item Set up simulation object
     \item Simulate library sizes
     \item Simulate base gene means
-    \item Simulate groups / tree structure differential factors
+    \item Simulate groups / tree / path structure differential factors
     \item Simulate mean variance relationship adjusted cell means
-    \item Simulate true counts with/without correlation
-    \item Simulate techinical droputs (zeroinflation / downsampling)
+    \item Simulate true counts with / without correlation
+    \item Simulate techinical noise (zeroinflation / downsampling)
     \item Create final dataset
 }
 
@@ -66,58 +68,7 @@ steps, and the paramters used to generate the simulation.
 These are stored in the \code{\link{colData}} (for cell specific
 information), \code{\link{rowData}} (for gene specific information),
 \code{\link{assays}} (for gene by cell matrices), 
-or \code{\link{metadata}} (for parameters configurations) slots. 
-
-This additional information includes:
-\describe{
-    \item{\code{phenoData}}{
-        \describe{
-            \item{Cell}{Unique cell identifier.}
-            \item{Group}{The group or path the cell belongs to.}
-            \item{ExpLibSize}{The expected library size for that cell.}
-            \item{}{}
-        }
-    }
-    \item{\code{featureData}}{
-        \describe{
-            \item{Gene}{Unique gene identifier.}
-            \item{DEgenes[Group]}{Values of 1 indicate the gene is differentially expressed.}
-            \item{GeneGroup}{The group that the gene belongs to (markers or housekeeping genes or None).}
-            \item{BaseGeneMean}{The base expression level for that gene.}
-            \item{OutlierFactor}{Expression outlier factor for that gene.
-            Values of 1 indicate the gene is not an expression outlier.}
-            \item{GeneMean}{Expression level after applying outlier factors.}
-            \item{BatchFac[Batch]}{The batch effects factor for each gene for
-            a particular batch.}
-            \item{DEFac[Group]}{The differential expression factor for each
-            gene in a particular group. Values of 1 indicate the gene is not
-            differentially expressed.}
-            \item{SigmaFac[Path]}{Factor applied to genes that have
-            non-linear changes in expression along a path.}
-        }
-    }
-    \item{\code{assayData}}{
-        \describe{
-            \item{Means}{The mean expression of genes in each cell
-            after adding batch effects.}
-            \item{BaseCellMeans}{The mean expression of genes in each cell
-            after any differential expression and adjusted for expected
-            library size.}
-            \item{BCV}{The Biological Coefficient of Variation for each gene
-            in each cell.}
-            \item{CellMeans}{The mean expression level of genes in each cell
-            adjusted for BCV.}
-            \item{TrueCounts}{The simulated true counts.}
-            \item{counts}{The simulated counts with technical noise.}
-            \item{Dropout}{Logical matrix showing which values have been
-            dropped in which cells.}
-        }
-    }
-}
-
-Values that have been added by escoter are named using \code{UpperCamelCase}
-in order to differentiate them from the values added by analysis packages
-which typically use \code{underscore_naming}.
+or \code{\link{metadata}} (for parameters configurations) slots.
 }
 \examples{
 # Simulation with default parameters
@@ -130,19 +81,21 @@ params <- newescoParams(nGenes = 100, mean.rate = 0.5)
 sim <- escoSimulate(params)
 # Simulation with adjusted custom parameters
 sim <- escoSimulate(params, mean.rate = 0.6, out.prob = 0.2)
-# Simulate groups
-sim <- escoSimulate(type = "groups")
-# Simulate paths
+# Simulate group
+sim <- escoSimulate(type = "group")
+# Simulate tree
 sim <- escoSimulate(type = "tree")
+# Simulate traj
+sim <- escoSimulate(type = "traj")
 }
 }
 \references{
-Zappia L, Phipson B, Oshlack A. escoter: simulation of single-cell RNA
-sequencing data. Genome Biology (2017).
+Tian J, Wang J, Roeder K. ESCO: single cell expression simulation incorporating gene co-expression. 
+bioRxiv. 2020.
 
-Paper: \url{10.1186/s13059-017-1305-0}
+Paper: \url{https://www.biorxiv.org/content/10.1101/2020.10.20.347211v1}
 
-Code: \url{https://github.com/Oshlack/escoter}
+Code: \url{https://github.com/JINJINT/}
 }
 \seealso{
 \code{\link{escoSimLibSizes}}, 

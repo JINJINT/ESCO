@@ -23,12 +23,14 @@
 #'
 #' params <- escoEstimate(sc_example_counts)
 #' params
+#' @importFrom splatter setParams setParam getParams getParam 
 #' @export
 escoEstimate <- function(counts, dirname, rho = FALSE, group = FALSE, metacell = NULL, cellinfo = NULL,params = newescoParams()) {
     UseMethod("escoEstimate")
 }
 
 #' @rdname escoEstimate
+#' @importFrom splatter setParams setParam getParams getParam
 #' @export
 #' 
 escoEstimate.SingleCellExperiment <- function(counts, dirname, rho = FALSE, group = FALSE, metacell = NULL, cellinfo = NULL,
@@ -41,6 +43,7 @@ escoEstimate.SingleCellExperiment <- function(counts, dirname, rho = FALSE, grou
 #' @rdname escoEstimate
 #' @importFrom stats median quantile
 #' @importFrom SC3 get_marker_genes
+#' @importFrom splatter setParams setParam getParams getParam
 #' @export
 escoEstimate.matrix <- function(counts, dirname, rho = FALSE, group = FALSE, metacell = NULL, cellinfo = NULL, params = newescoParams()) {
 
@@ -159,6 +162,7 @@ escoEstimate.matrix <- function(counts, dirname, rho = FALSE, group = FALSE, met
 #' @return escoParams object with estimated values.
 #'
 #' @importFrom stats shapiro.test
+#' @importFrom splatter setParams setParam getParams getParam
 escoEstLib <- function(counts, norm.counts, params) {
   
   #lib.sizes <- colSums(counts)
@@ -244,6 +248,7 @@ escoEstLib <- function(counts, norm.counts, params) {
 #' winsorized by setting the top and bottom 10 percent of values to the 10th
 #' and 90th percentiles.
 #' @import DescTools
+#' @importFrom splatter setParams setParam getParams getParam
 #'
 #' @return escoParams object with estimated values.
 escoEstMean <- function(normcounts, counts, params) {
@@ -303,6 +308,7 @@ escoEstMean <- function(normcounts, counts, params) {
 #' and 90th percentiles.
 #'
 #' @return escoParams object with estimated values.
+#' @importFrom splatter setParams setParam getParams getParam
 escoEstGroupMean <- function(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params) {
     
     means <- rowMeans(nonDE.normcounts)
@@ -351,6 +357,7 @@ escoEstGroupMean <- function(nonDE.normcounts, DE.normcounts, degenes, cellinfo,
 #' @return escoParams object with estimated values.
 #'
 #' @importFrom stats shapiro.test
+#' @importFrom splatter setParams setParam getParams getParam
 escoEstGroupLib <- function(counts, cellinfo = NULL, params) {
   
   if(!is.null(cellinfo)){
@@ -440,6 +447,7 @@ escoEstGroupLib <- function(counts, cellinfo = NULL, params) {
 #' scale parameters using \code{\link[fitdistrplus]{fitdist}}.
 #'
 #' @return escoParams object with estimated values.
+#' @importFrom splatter setParams setParam getParams getParam
 escoEstDE <- function(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params) {
   de.rank = list()
   de.facrank = list()
@@ -500,6 +508,7 @@ escoEstDE <- function(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params
 #' scale parameters using \code{\link[fitdistrplus]{fitdist}}.
 #'
 #' @return escoParams object with estimated values.
+#' @importFrom splatter setParams setParam getParams getParam
 escoEstGroupOutlier <- function(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params) {
     means <- rowMeans(nonDE.normcounts)
     for(idx in 1:length(unique(degenes$clusts))){
@@ -552,6 +561,7 @@ escoEstGroupOutlier <- function(nonDE.normcounts, DE.normcounts, degenes, cellin
 #' scale parameters using \code{\link[fitdistrplus]{fitdist}}.
 #'
 #' @return escoParams object with estimated values.
+#' @importFrom splatter setParams setParam getParams getParam
 escoEstOutlier <- function(norm.counts, params) {
   
   means <- rowMeans(norm.counts)
@@ -597,6 +607,7 @@ escoEstOutlier <- function(norm.counts, params) {
 #' apply a small correction, \code{disp = 0.1 + 0.25 * edgeR.disp}.
 #'
 #' @return escoParams object with estimated values.
+#' @importFrom splatter setParams setParam getParams getParam
 escoEstBCV <- function(counts, norm.counts, params, cellinfo = NULL){
   if(is.null(cellinfo)){
     means = rowMeans(norm.counts)
@@ -667,6 +678,7 @@ escoEstBCV <- function(counts, norm.counts, params, cellinfo = NULL){
 #' @return escoParams object with estimated values.
 #'
 #' @importFrom stats dnbinom nls
+#' @importFrom splatter setParams setParam getParams getParam
 escoEstDropout <- function(norm.counts, params) {
 
     means <- rowMeans(norm.counts)
@@ -695,44 +707,60 @@ escoEstDropout <- function(norm.counts, params) {
     return(params)
 }
 
-
-#' Estimate esco correlation matrix using meta data or the copula method
+#' Logistic function
 #'
-#' @importFrom stats shapiro.test
-escoEstCorr <- function(counts, cellinfo, params, method = c("meta", "copula")) {
-   
-  
-  for(idx in 1:length(unique(cellinfo))){
-    cells = colnames(counts)[which(cellinfo!=levels(cellinfo)[idx])]
-    lib.sizes <- colSums(counts[,cells])
-    if (length(lib.sizes) > 5000) {
-      message("NOTE: More than 5000 cells provided. ",
-              "5000 sampled library sizes will be used to test normality.")
-      lib.sizes.sampled <- sample(lib.sizes, 5000, replace = FALSE)
-    } else {
-      lib.sizes.sampled <- lib.sizes
-    }
-    
-    norm.test <- shapiro.test(lib.sizes.sampled)
-    lib.norm[idx] <- norm.test$p.value > 0.2
-    
-    if (lib.norm[idx]) {
-      fit <- fitdistrplus::fitdist(lib.sizes, "norm")
-      lib.loc[idx] <- unname(fit$estimate["mean"])
-      lib.scale[idx] <- unname(fit$estimate["sd"])
-      message("NOTE: Library sizes have been found to be normally ",
-              "distributed instead of log-normal. You may want to check ",
-              "this is correct.")
-    } else {
-      fit <- fitdistrplus::fitdist(lib.sizes, "lnorm")
-      lib.loc[idx] <- unname(fit$estimate["meanlog"])
-      lib.scale[idx] <- unname(fit$estimate["sdlog"])
-    }
+#' Implementation of the logistic function
+#'
+#' @param x value to apply the function to.
+#' @param x0 midpoint parameter. Gives the centre of the function.
+#' @param k shape parameter. Gives the slope of the function.
+#'
+#' @return Value of logistic funciton with given parameters
+logistic <- function(x, x0, k) {
+  1 / (1 + exp(-k * (x - x0)))
+}
+
+#' Bind rows (matched)
+#'
+#' Bind the rows of two data frames, keeping only the columns that are common
+#' to both.
+#'
+#' @param df1 first data.frame to bind.
+#' @param df2 second data.frame to bind.
+#'
+#' @return data.frame containing rows from \code{df1} and \code{df2} but only
+#'         common columns.
+rbindMatched <- function(df1, df2) {
+  common.names <- intersect(colnames(df1), colnames(df2))
+  if (length(common.names) < 2) {
+    stop("There must be at least two columns in common")
   }
-  params <- setParams(params, lib.loc = lib.loc, lib.scale = lib.scale,
-                      lib.norm = lib.norm)
+  combined <- rbind(df1[, common.names], df2[, common.names])
   
-  return(params)
+  return(combined)
+}
+
+#' Winsorize vector
+#'
+#' Set outliers in a numeric vector to a specified percentile.
+#'
+#' @param x Numeric vector to winsorize
+#' @param q Percentile to set from each end
+#'
+#' @return Winsorized numeric vector
+winsorize <- function(x, q) {
+  
+  checkmate::check_numeric(x, any.missing = FALSE)
+  checkmate::check_number(q, lower = 0, upper = 1)
+  
+  lohi <- stats::quantile(x, c(q, 1 - q), na.rm = TRUE)
+  
+  if (diff(lohi) < 0) { lohi <- rev(lohi) }
+  
+  x[!is.na(x) & x < lohi[1]] <- lohi[1]
+  x[!is.na(x) & x > lohi[2]] <- lohi[2]
+  
+  return(x)
 }
 
 # library("copula")

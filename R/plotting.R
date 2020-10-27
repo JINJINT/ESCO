@@ -380,8 +380,8 @@ histplot<-function(gcn1, gcn2, labels, xlab = "pearson correlation", main = "", 
           xlim(breaks = c(-1,1)))
 }
 
-#' #' @import ggplot2
-#' #' @export
+#' @import ggplot2
+#' @export
 #' 
 compare_simreal<-function(real, simlist, plotdir, realcellinfo = NULL, realdegeneinfo = NULL){
      
@@ -461,9 +461,9 @@ compare_simreal<-function(real, simlist, plotdir, realcellinfo = NULL, realdegen
 
 
 
-#'@import ggplot2 
-#'@import cowplot
-#'@export  
+#' @import ggplot2 
+#' @import cowplot
+#' @export  
 compareplot<-function(res, extrainfo, plotdir){
   plt1 <- makeCompPanel(res$Comp, title = extrainfo)
   plt1.name <- paste0("additional", extrainfo, "_comp")
@@ -623,9 +623,9 @@ compareplot<-function(res, extrainfo, plotdir){
   
 }
 
-#'@import umap
-#'@import ggplot2
-#'@export 
+#' @import umap
+#' @import ggplot2
+#' @export 
 umapplot<-function(data, celltype, labels, config = umap.defaults){
   embedding <- umap(t(data), config = config)
   dat = data.frame(UMAP1 = embedding$layout[,1], UMAP2 = embedding$layout[,2], celltype = celltype)

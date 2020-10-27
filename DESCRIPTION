@@ -18,7 +18,8 @@ License: GPL-3 + file LICENSE
 LazyData: TRUE
 Depends:
     R (>= 3.4),
-    SingleCellExperiment
+    SingleCellExperiment,
+    splatter
 Imports:
     AUC,
     akima,

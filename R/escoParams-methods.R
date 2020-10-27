@@ -9,8 +9,7 @@ newescoParams <- function(...) {
     return(params)
 }
 
-#' @importFrom checkmate checkInt checkIntegerish checkNumber checkNumeric checkCharacter
-#' checkFlag
+#' @importFrom checkmate checkInt checkIntegerish checkNumber checkNumeric checkCharacter checkFlag
 setValidity("escoParams", function(object) {
 
     object <- expandParams(object)
@@ -84,7 +83,7 @@ setValidity("escoParams", function(object) {
     return(valid)
 })
 
-#' @rdname setParam
+
 setMethod("setParam", "escoParams",function(object, name, value) {
     checkmate::assertString(name)
 
@@ -166,7 +165,7 @@ setMethod("show", "escoParams", function(object) {
     showPP(object, pp)
 })
 
-#' @rdname expandParams
+
 setMethod("expandParams", "escoParams", function(object) {
 
     n <- getParam(object, "nGroups")
@@ -179,7 +178,6 @@ setMethod("expandParams", "escoParams", function(object) {
 })
 
 
-#' @rdname setParams
 setMethod("setParams", "escoParams", function(object, update = NULL, ...) {
     
     checkmate::assertClass(object, classes = "escoParams")
@@ -193,3 +191,31 @@ setMethod("setParams", "escoParams", function(object, update = NULL, ...) {
     
     return(object)
 })
+
+#' Bring items forward
+#'
+#' Move selected items to the start of a list.
+#'
+#' @param ll list to adjust item order.
+#' @param items vector of items to bring to the front. Any not in the list will
+#'        be ignored.
+#'
+#' @return list with selected items first
+bringItemsForward <- function(ll, items) {
+    
+    checkmate::check_list(ll, min.len = 1, names = "unique")
+    checkmate::check_character(items, any.missing = FALSE, min.len = 1,
+                               unique = TRUE)
+    
+    items <- items[items %in% names(ll)]
+    
+    if (length(items) > 0) {
+        ll.front <- ll[items]
+        ll.back <- ll[!(names(ll) %in% items)]
+        
+        ll <- c(ll.front, ll.back)
+    }
+    
+    return(ll)
+}
+

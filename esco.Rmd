@@ -278,7 +278,7 @@ cell to a step. We can create this kind of simulation using the `"paths"`
 method.
 
 ```{r paths, warning=FALSE, fig.height = 3, fig.width = 4}
-sim <- escoSimulatePath(nGenes = 1000, nCells = 500,
+sim <- escoSimulateTraj(nGenes = 1000, nCells = 500,
                         paths.deprob = 0.3,
                         paths.design = data.frame(
                           Path = c(1, 2, 3),

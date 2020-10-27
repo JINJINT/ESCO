@@ -4,7 +4,7 @@
 \alias{escoSimTrueCounts}
 \title{Simulate true counts}
 \usage{
-escoSimTrueCounts(sim, type, verbose)
+escoSimTrueCounts(sim, type, verbose, numCores = 2)
 }
 \arguments{
 \item{sim}{SingleCellExperiment to add true counts to.}
