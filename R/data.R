@@ -22,15 +22,4 @@
 "gene_len_pool"
 
 
-#' from transcript length to number of fragments (for the nonUMI protocol)
-#' @name len2nfrag
-#' @docType data
-#' @usage data(len2nfrag)
-#' @format a vector.
-#' @keywords datasets
-#' @examples 
-#' data(len2nfrag)
-"len2nfrag"
-
-
 

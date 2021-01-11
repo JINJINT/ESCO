@@ -95,6 +95,7 @@
 #' @importFrom SingleCellExperiment SingleCellExperiment
 #' @importFrom methods validObject
 #' @importFrom svMisc progress
+#' @importFrom splatter getParam setParam setParams
 #' @export
 #' @rdname escoSimulate
 
@@ -293,6 +294,7 @@ escoSimulateTraj <- function(params = newescoParams(),
 #' @importFrom SummarizedExperiment colData colData<- 
 #' @importFrom S4Vectors metadata metadata<-
 #' @importFrom stats rlnorm rnorm
+#' @importFrom splatter getParam setParam setParams
 #' @rdname escoSimLib
 escoSimLib <- function(sim, verbose) {
     params <- metadata(sim)$Params
@@ -355,6 +357,7 @@ escoSimLib <- function(sim, verbose) {
 #' @importFrom SummarizedExperiment rowData rowData<-
 #' @importFrom S4Vectors metadata metadata<-
 #' @importFrom stats rgamma median
+#' @importFrom splatter getParam setParam setParams
 #' @rdname escoSimGeneMean
 escoSimGeneMeans <- function(sim, verbose) {
     params <- metadata(sim)$Params
@@ -419,6 +422,7 @@ escoSimGeneMeans <- function(sim, verbose) {
 #' @importFrom SummarizedExperiment rowData 
 #' @importFrom S4Vectors metadata metadata<-
 #' @importFrom stats ecdf
+#' @importFrom splatter getParam setParam setParams
 escoSimGroupDE <- function(sim, verbose) {
     params <- metadata(sim)$Params
     
@@ -526,6 +530,7 @@ escoSimGroupDE <- function(sim, verbose) {
 #' @importFrom S4Vectors metadata metadata<-
 #' @importFrom ape vcv.phylo
 #' @importFrom MASS mvrnorm
+#' @importFrom splatter getParam setParam setParams
 escoSimTreeDE <- function(sim, verbose) {
   params <- metadata(sim)$Params
   
@@ -604,6 +609,7 @@ escoSimTreeDE <- function(sim, verbose) {
 #' @rdname escoSimTrajDE
 #' @importFrom S4Vectors metadata metadata<-
 #' @importFrom igraph graph_from_data_frame topo_sort
+#' @importFrom splatter getParam setParam setParams
 escoSimTrajDE <- function(sim, verbose) {
   params = metadata(sim)$Params
   if (verbose) {message("Simulating trajetories...")}
@@ -694,6 +700,7 @@ escoSimTrajDE <- function(sim, verbose) {
 #' @rdname escoSimSingleCellMeans
 #' @importFrom SummarizedExperiment rowData colData assays assays<- 
 #' @importFrom S4Vectors metadata metadata<-
+#' @importFrom splatter getParam setParam setParams
 escoSimSingleCellMeans <- function(sim, verbose) {
     params <- metadata(sim)$Params
     nCells <- getParam(params, "nCells")
@@ -732,6 +739,7 @@ escoSimSingleCellMeans <- function(sim, verbose) {
 #' @rdname escoSimGroupCellMeans
 #' @importFrom SummarizedExperiment rowData colData assays assays<- 
 #' @importFrom S4Vectors metadata metadata<-
+#' @importFrom splatter getParam setParam setParams
 
 escoSimGroupCellMeans <- function(sim, verbose) {
     params <- metadata(sim)$Params
@@ -780,6 +788,7 @@ escoSimGroupCellMeans <- function(sim, verbose) {
 #' @importFrom S4Vectors metadata metadata<-
 #' @importFrom SC3 get_marker_genes
 #' @importFrom doBy which.minn which.maxn
+#' @importFrom splatter getParam setParam setParams
 escoSimTreeCellMeans <- function(sim, verbose) {
   params<-metadata(sim)$Params
   nGenes <- getParam(params, "nGenes")
@@ -845,6 +854,7 @@ escoSimTreeCellMeans <- function(sim, verbose) {
 #' library size. An adjustment for BCV is then applied. 
 #'
 #' @rdname escoSimTrajMeans
+#' @importFrom splatter getParam setParam setParams
 escoSimTrajCellMeans <- function(sim, verbose) {
   params = metadata(sim)$Params
   
@@ -934,6 +944,7 @@ escoSimTrajCellMeans <- function(sim, verbose) {
 #' @import foreach
 #' @import doSNOW
 #' @import progress
+#' @importFrom splatter getParam setParam setParams
 #' @rdname escoSimTrueCounts
 escoSimTrueCounts <- function(sim, type, verbose, numCores = 2) {
     params<-metadata(sim)$Params
@@ -1146,6 +1157,7 @@ escoSimTrueCounts <- function(sim, type, verbose, numCores = 2) {
 #' @importFrom SummarizedExperiment rowData colData assays assays<-
 #' @importFrom S4Vectors metadata metadata<-
 #' @importFrom stats rbinom
+#' @importFrom splatter getParam setParam setParams
 escoSimZeroInflate <- function(sim, trial, verbose) {
     params <- metadata(sim)$Params
     dirname <- getParam(params, "dirname")
@@ -1237,8 +1249,8 @@ escoSimZeroInflate <- function(sim, trial, verbose) {
 #' @param trial the index of trial of simulation, all trials share the same truth but the 
 #'        noise is added independently for each trial
 #' @param verbose whether to print the process or not
-#' @param protocal a string, can be "nonUMI" or "UMI", default is "UMI"
 #' @param nbatch number of batches, default is 1.
+#' @return SingleCellExperiment with simulated dropout and observed counts.
 #' @import SummarizedExperiment
 #' @importFrom S4Vectors metadata metadata<-
 #' @importFrom utils data
@@ -1246,8 +1258,9 @@ escoSimZeroInflate <- function(sim, trial, verbose) {
 #' @import foreach
 #' @import doSNOW
 #' @import progress
+#' @importFrom splatter getParam setParam setParams
 #' @rdname escoSimDownSample
-escoSimDownSample <- function(sim, trial, verbose, numCores =2, protocol = "UMI", nbatch=1){
+escoSimDownSample <- function(sim, trial, verbose, numCores =2, nbatch=1){
   params <-metadata(sim)$Params
   dirname <- getParam(params, "dirname")
   true_counts = assays(sim)$TrueCounts
@@ -1299,7 +1312,7 @@ escoSimDownSample <- function(sim, trial, verbose, numCores =2, protocol = "UMI"
       } 
       opts <- list(progress = progress)
       observed_counts <- foreach(i = c(1:total), .options.snow = opts, .export=c("amplify_cell")) %dopar% {
-        return(amplify_cell(true_counts_1cell =  true_counts[, i], protocol=protocol, 
+        return(amplify_cell(true_counts_1cell =  true_counts[, i], 
                      rate_2cap=rate_2cap_vec[i], gene_len=gene_len, amp_bias = amp_bias, 
                      rate_2PCR=rate_2PCR, nPCR1=nPCR1, nPCR2=nPCR2, LinearAmp = LinearAmp, 
                      LinearAmp_coef = LinearAmp_coef, N_molecules_SEQ = depth_vec[i]))     
@@ -1310,13 +1323,12 @@ escoSimDownSample <- function(sim, trial, verbose, numCores =2, protocol = "UMI"
       batchIDs <- sample(1:nbatch, ncells, replace = TRUE)
       meta_cell <- data.frame(alpha=rate_2cap_vec,depth=depth_vec, batch=batchIDs)
       
-      if(protocol=="UMI"){
-        UMI_counts <- do.call(cbind, lapply(observed_counts, "[[", 1))
-        nreads_perUMI <- lapply(observed_counts, "[[", 2)
-        nUMI2seq <- sapply(observed_counts, "[[", 3)
-        observed_counts <- UMI_counts
-      } 
-      else observed_counts <- do.call(cbind,observed_counts)
+
+      UMI_counts <- do.call(cbind, lapply(observed_counts, "[[", 1))
+      nreads_perUMI <- lapply(observed_counts, "[[", 2)
+      nUMI2seq <- sapply(observed_counts, "[[", 3)
+      observed_counts <- UMI_counts
+
       
       rownames(observed_counts) = rownames(true_counts)
       colnames(observed_counts) = colnames(true_counts)
@@ -1342,6 +1354,7 @@ escoSimDownSample <- function(sim, trial, verbose, numCores =2, protocol = "UMI"
 #' @param nbins number of bins for gene length
 #' @param gene_len transcript length of each gene
 #' @param amp_bias_limit range of amplification bias for each gene, a vector of length ngenes
+#' @return the technical bias
 cal_amp_bias <- function(lenslope, nbins, gene_len, amp_bias_limit){
   
   ngenes <- length(gene_len)
@@ -1381,7 +1394,6 @@ cal_amp_bias <- function(lenslope, nbins, gene_len, amp_bias_limit){
 #' Nature communications. 2019 Jun 13;10(1):1-6. \url{https://www.nature.com/articles/s41467-019-10500-w}
 #' 
 #' @param true_counts_1cell the true transcript counts for one cell (one vector)
-#' @param protocol a string, can be "nonUMI" or "UMI"
 #' @param rate_2cap the capture efficiency for this cell
 #' @param gene_len gene lengths for the genes/transcripts, sampled from real human transcript length
 #' @param amp_bias amplification bias for each gene, a vector of length ngenes
@@ -1392,8 +1404,8 @@ cal_amp_bias <- function(lenslope, nbins, gene_len, amp_bias_limit){
 #' @param LinearAmp_coef the coeficient of linear amplification, that is, how many times each molecule is amplified by
 #' @param N_molecules_SEQ number of molecules sent for sequencing; sequencing depth
 #' @importFrom utils data
-#' @return read counts (if protocol="nonUMI") or UMI counts (if protocol="UMI)
-amplify_cell<- function(true_counts_1cell, protocol, rate_2cap, gene_len, amp_bias, 
+#' @return UMI counts 
+amplify_cell<- function(true_counts_1cell, rate_2cap, gene_len, amp_bias, 
                           rate_2PCR, nPCR1, nPCR2, LinearAmp, LinearAmp_coef, N_molecules_SEQ){
   
   # expand transcript counts to a vector of binaries of the same length of as the number of transcripts
@@ -1406,9 +1418,6 @@ amplify_cell<- function(true_counts_1cell, protocol, rate_2cap, gene_len, amp_bi
   }
   
   ngenes <- length(gene_len)
-  if (protocol=="nonUMI"){data(len2nfrag)} else 
-    if(protocol=="UMI"){ } else
-    {stop("protocol input should be nonUMI or UMI")}
   inds <- vector("list",2)
   # expand the original vector and apply capture efficiency
   # maintain a transcript index vector: which transcript the molecule belongs to
@@ -1442,37 +1451,7 @@ amplify_cell<- function(true_counts_1cell, protocol, rate_2cap, gene_len, amp_bi
     PCRed_vec <- temp
   }
   
-  if (protocol=="nonUMI"){ # add fragmentation step here
-    temp_vec <- PCRed_vec
-    for (i in seq(2,1,-1)){
-      temp_vec1 <- numeric(); temp_vec1[inds[[i]]] <- temp_vec; 
-      temp_vec <- temp_vec1; temp_vec[is.na(temp_vec)] <- 0
-    }
-    recovered_vec <- temp_vec[1:(length(temp_vec)-1)]
-    amp_mol_count=numeric(ngenes);
-    GI=c(0, cumsum(true_counts_1cell));
-    for (i in which(true_counts_1cell>0)){
-      x=recovered_vec[(GI[i]+1):GI[i+1]]
-      amp_mol_count[i]=sum(x)
-    }
-    
-    # for every copy of each transcript, convert it into number of fragments
-    frag_vec <- numeric(ngenes)
-    for (igene in which(amp_mol_count>0)){
-      frag_vec[igene] <- sum(sample(len2nfrag[as.character(gene_len[igene]),], 
-                                    amp_mol_count[igene], replace = TRUE))}
-    # another 8 rounds of amplification to the fragments (fragmentation bias gets amplified)
-    for (iPCR in 1:2){
-      frag_vec <- frag_vec + sapply(frag_vec, function(x) rbinom(n=1, x, prob = rate_2PCR))
-    }
-    for (iPCR in 3:nPCR2){
-      frag_vec <- frag_vec + round(frag_vec*rate_2PCR)
-    }
-    SEQ_efficiency=N_molecules_SEQ/sum(frag_vec)
-    if (SEQ_efficiency >= 1) {read_count <- frag_vec} else{
-      read_count <- sapply(frag_vec,function(Y){rbinom(n=1,size=Y,prob=SEQ_efficiency)}) }
-    return(read_count)
-  } else if (protocol=="UMI"){
+
     
     
     get_prob <- function(glength){
@@ -1514,4 +1493,4 @@ amplify_cell<- function(true_counts_1cell, protocol, rate_2cap, gene_len, amp_bi
     
     return(list(UMI_counts, sequenced_vec, sum(frag_vec>0)))
   }
-}
+

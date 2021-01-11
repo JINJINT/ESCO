@@ -17,6 +17,9 @@ rnorm_truc(n, mean, sd, a, b)
 
 \item{b}{the maximum value allowed}
 }
+\value{
+a vector of size n
+}
 \description{
 This function is borrowed from \code{\link[splatter]{splatter}}.
 }

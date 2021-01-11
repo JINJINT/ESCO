@@ -5,13 +5,11 @@
 \title{Simulate amplification, library prep, and the sequencing processes.
 (This function is borrowed from SymSim).}
 \usage{
-amplify_cell(true_counts_1cell, protocol, rate_2cap, gene_len, amp_bias,
-  rate_2PCR, nPCR1, nPCR2, LinearAmp, LinearAmp_coef, N_molecules_SEQ)
+amplify_cell(true_counts_1cell, rate_2cap, gene_len, amp_bias, rate_2PCR,
+  nPCR1, nPCR2, LinearAmp, LinearAmp_coef, N_molecules_SEQ)
 }
 \arguments{
 \item{true_counts_1cell}{the true transcript counts for one cell (one vector)}
-
-\item{protocol}{a string, can be "nonUMI" or "UMI"}
 
 \item{rate_2cap}{the capture efficiency for this cell}
 
@@ -32,7 +30,7 @@ amplify_cell(true_counts_1cell, protocol, rate_2cap, gene_len, amp_bias,
 \item{N_molecules_SEQ}{number of molecules sent for sequencing; sequencing depth}
 }
 \value{
-read counts (if protocol="nonUMI") or UMI counts (if protocol="UMI)
+UMI counts
 }
 \description{
 Simulate amplification, library prep, and the sequencing processes.

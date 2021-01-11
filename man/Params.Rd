@@ -7,6 +7,7 @@
 \title{The Params virtual class}
 \description{
 Virtual S4 class that all other Params classes inherit from.
+(this function is an internal function from \code{\link[splatter]{splatter}}.)
 }
 \section{Parameters}{
 

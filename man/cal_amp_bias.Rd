@@ -16,6 +16,9 @@ cal_amp_bias(lenslope, nbins, gene_len, amp_bias_limit)
 
 \item{amp_bias_limit}{range of amplification bias for each gene, a vector of length ngenes}
 }
+\value{
+the technical bias
+}
 \description{
 Simulate technical biases.
 (This function is borrowed from SymSim).

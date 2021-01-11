@@ -7,6 +7,7 @@
 #' @param mean the mean of the normal distribution
 #' @param sd the standard deviation of the normal distribution
 #' @param n sample size
+#' @return a vector of size n 
 rnorm_truc <- function(n, mean, sd, a, b){
   vec1 <- rnorm(n, mean = mean, sd=sd)
   beyond_idx <- which(vec1 < a | vec1 > b)

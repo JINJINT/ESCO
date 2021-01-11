@@ -460,7 +460,7 @@ escoEstDropout <- function(norm.counts, params) {
 escoEstGroupMean <- function(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params) {
     
     means <- rowMeans(nonDE.normcounts)
-    for(idx in 1:length(unique(degenes$clusts))){
+    for(idx in seq_len(unique(degenes$clusts))){
       marker = degenes$genes[which(degenes$clusts==idx)]
       cells = colnames(DE.normcounts)[which(cellinfo!=levels(cellinfo)[idx])]
       means = c(means, rowMeans(DE.normcounts[marker,cells]))
@@ -510,7 +510,7 @@ escoEstGroupLib <- function(counts, cellinfo = NULL, params) {
     lib.norm = c()
     lib.loc = c()
     lib.scale = c()
-    for(idx in 1:length(unique(cellinfo))){
+    for(idx in seq_len(length(unique(cellinfo)))){
       cells = colnames(counts)[which(cellinfo==levels(cellinfo)[idx])]
       lib.sizes <- colSums(counts[,cells])
       if (length(lib.sizes) > 5000) {
@@ -604,7 +604,7 @@ escoEstDE <- function(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params
   de.rank = list()
   de.facrank = list()
   means <- rowMeans(nonDE.normcounts)
-  for(idx in 1:length(unique(degenes$clusts))){
+  for(idx in seq_len(length(unique(degenes$clusts)))){
     marker = degenes$genes[which(degenes$clusts==idx)]
     cells = colnames(DE.normcounts)[which(cellinfo!=levels(cellinfo)[idx])]
     means = c(means, rowMeans(DE.normcounts[marker,cells]))
@@ -617,7 +617,7 @@ escoEstDE <- function(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params
   
   start = nrow(nonDE.normcounts)+1
   
-  for(idx in 1:length(unique(degenes$clusts))){
+  for(idx in seq_len(length(unique(degenes$clusts)))){
     marker = as.character(degenes$genes[which(degenes$clusts==idx)])
     nonDEcells = colnames(DE.normcounts)[which(cellinfo!=levels(cellinfo)[idx])]
     nonDEmeans = rowMeans(DE.normcounts[marker, nonDEcells])
@@ -671,7 +671,7 @@ escoEstDE <- function(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params
 #' @importFrom splatter setParams setParam getParams getParam
 escoEstGroupOutlier <- function(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params) {
     means <- rowMeans(nonDE.normcounts)
-    for(idx in 1:length(unique(degenes$clusts))){
+    for(idx in seq_len(length(unique(degenes$clusts)))){
       marker = degenes$genes[which(degenes$clusts==idx)]
       cells = colnames(DE.normcounts)[which(cellinfo!=levels(cellinfo)[idx])]
       means = c(means, rowMeans(DE.normcounts[marker,cells]))

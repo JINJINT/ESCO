@@ -50,6 +50,9 @@ Default is NULL, that is no gene annotation.}
 
 \item{extrainfo}{a string of extra information to saved in the final plot filename, default as "".}
 }
+\value{
+heatmap plots showing immediately or pdf files saved to desinated directory.
+}
 \description{
 Heatmap plot a set of gene expression matrix of the same set of gene and cells with proper annotations
 }

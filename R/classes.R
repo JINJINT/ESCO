@@ -1,7 +1,7 @@
 #' The Params virtual class
 #'
 #' Virtual S4 class that all other Params classes inherit from.
-#'
+#' (this function is an internal function from \code{\link[splatter]{splatter}}.)
 #' @section Parameters:
 #'
 #' The Params class defines the following parameters:
@@ -280,7 +280,6 @@ setClass("escoParams",
          ))
 
 
-
 #' Get parameters
 #'
 #' Get multiple parameter values from a Params object 
@@ -293,6 +292,7 @@ setClass("escoParams",
 #' @examples
 #' params <- newescoParams()
 #' getParams(params, c("nGenes", "nCells"))
+#' @rdname getParams
 getParams <- function(params, names) {
   
   checkmate::assertClass(params, classes = "Params")
@@ -323,6 +323,7 @@ getParams <- function(params, names) {
 #' them manually), see examples. THE FINAL OBJECT IS NOT CHECKED FOR VALIDITY!
 #'
 #' @return Params object with updated values.
+#' @rdname setParamsUnchecked
 setParamsUnchecked <- function(params, update = NULL, ...) {
   
   checkmate::assertClass(params, classes = "Params")
@@ -340,195 +341,124 @@ setParamsUnchecked <- function(params, update = NULL, ...) {
   return(params)
 }
 
-#' Show pretty print
-#'
-#' Function used for pretty printing params object (this function is borrowed from splatter).
-#'
-#' @param params object to show.
-#' @param pp list specifying how the object should be displayed.
-#'
-#' @return Print params object to console
-showPP <- function(params, pp) {
-  
-  checkmate::assertClass(params, classes = "Params")
-  checkmate::assertList(pp, types = "character", min.len = 1)
-  
-  default <- new(class(params))
-  for (category in names(pp)) {
-    parameters <- pp[[category]]
-    values <- getParams(params, parameters)
-    is.df <- vapply(values, is.data.frame, FALSE)
-    
-    default.values <- getParams(default, parameters)
-    not.default <- vapply(seq_along(values), function(i) {
-      !identical(values[i], default.values[i])
-    }, FALSE)
-    empty.values <- vapply(values, function(x) {
-      is.null(x) || length(x) == 0
-    }, FALSE)
-    values[empty.values] <- "Not set"
-    
-    names(values) <- names(parameters)
-    cat(crayon::bold(category), "\n")
-    if (sum(!is.df) > 0) {
-      showValues(values[!is.df], not.default[!is.df])
-    }
-    if (sum(is.df) > 0) {
-      showDFs(values[is.df], not.default[is.df])
-    }
-    cat("\n")
-  }
-}
 
-#' Show values
+#' New Params
 #'
-#' Function used for pretty printing scalar or vector parameters (this function is borrowed from splatter).
+#' Create a new Params object. Functions exist for each of the different
+#' Params subtypes.
 #'
-#' @param values list of values to show.
-#' @param not.default logical vector giving which have changed from the default.
+#' @param ... additional parameters passed to \code{\link{setParams}}.
 #'
-#' @return Print values
+#' @return New Params object.
+#' @examples
+#' params <- newescoParams()
+#' params <- newescoParams(nGenes = 200, nCells = 10)
 #'
-#' @importFrom utils head
-showValues <- function(values, not.default) {
-  
-  checkmate::check_list(values, any.missing = FALSE, min.len = 1)
-  checkmate::check_logical(not.default, any.missing = FALSE,
-                           len = length(values))
-  
-  short.values <- vapply(values, function(x) {
-    if (is.list(x)) {
-      classes <- class(x)
-      if (length(classes) == 1 && classes == "list") {
-        paste("List with", length(x), "items")
-      } else {
-        paste("Object of class", paste(classes, collapse = ", "))
-      }
-    } else {
-      if (length(x) > 4) {
-        paste0(paste(head(x, n = 4), collapse = ", "), ",...")
-      } else {
-        paste(x, collapse = ", ")
-      }
-    }
-  }, c(Value = "None"))
-  
-  names(short.values)[not.default] <- toupper(names(values[not.default]))
-  
-  max.len <- max(nchar(short.values), nchar(names(short.values)))
-  
-  screen.width <- options("width")$width
-  items.per.line <- floor(screen.width / (max.len + 2))
-  
-  short.names <- names(short.values)
-  not.est <- !grepl("\\(", short.names)
-  secondary <- grepl("\\*", short.names)
-  short.names <- gsub("\\*", "", short.names)
-  
-  short.names[not.est] <- crayon::blue(short.names[not.est])
-  short.names[secondary] <- crayon::bgYellow(short.names[secondary])
-  short.names[not.default] <- crayon::bold(short.names[not.default])
-  short.values[not.default] <- crayon::green(short.values[not.default])
-  short.values[not.default] <- crayon::bold(short.values[not.default])
-  
-  short.values <- crayon::col_align(short.values, max.len, "right")
-  short.names <- crayon::col_align(short.names, max.len, "right")
-  
-  names(short.values) <- short.names
-  
-  values.list <- split(short.values,
-                       ceiling(seq_along(short.values) / items.per.line))
-  
-  for (line in values.list) {
-    cat(paste(names(line), collapse = "  "), "\n")
-    cat(paste(unname(line), collapse = "  "), "\n")
-  }
-}
+#' @name newParams
+NULL
 
-#' Show data.frame (this function is borrowed from splatter)
-#'
-#' Function used for pretty printing data.frame parameters.
-#'
-#' @param dfs list of data.frames to show.
-#' @param not.default logical vector giving which have changed from the default.
-#'
-#' @return Print data.frame parameters
-#'
-#' @importFrom utils head
-showDFs <- function(dfs, not.default) {
-  
-  checkmate::check_list(dfs, types = "data.frame", any.missing = FALSE,
-                        min.len = 1)
-  checkmate::check_logical(not.default, any.missing = FALSE,
-                           len = length(dfs))
-  
-  names(dfs)[not.default] <- toupper(names(dfs)[not.default])
-  
-  not.est <- !grepl("\\(", names(dfs))
-  names(dfs)[not.est] <- crayon::blue(names(dfs)[not.est])
-  names(dfs)[not.default] <- crayon::bold(names(dfs)[not.default])
-  
-  for (i in seq_along(dfs)) {
-    df <- dfs[[i]]
-    name <- names(dfs)[i]
-    
-    msg <- paste0("data.frame (", nrow(df), " x ", ncol(df),
-                  ") with columns: ", paste(colnames(df), collapse = ", "))
-    
-    if (not.default[i]) {
-      msg <- crayon::bold(crayon::green(msg))
-    }
-    
-    cat(paste0("\n", name, "\n"))
-    cat(msg, "\n")
-    print(head(df, n = 4))
-    if (nrow(df) > 4) {
-      cat("# ... with", nrow(df) - 4, "more rows\n")
-    }
-  }
-}
-
-#' this function is borrowed from Splatter
-#' Set a parameter UNCHECKED
-setGeneric("setParamUnchecked", function(object, name, value) {
-  standardGeneric("setParamUnchecked")
-})
-
-#' this function is borrowed from Splatter
-#' Get a parameter
-setGeneric("getParam", function(object, name) {standardGeneric("getParam")})
-
-#' this function is borrowed from Splatter
 #' Set a parameter
+#'
+#' Function for setting parameter values. This function is borrowed from Splatter.
+#'
+#' @param object object to set parameter in.
+#' @param name name of the parameter to set.
+#' @param value value to set the parameter to.
+#'
+#' @return Object with new parameter value.
+#'
+#' @examples
+#' params <- newescoParams()
+#' setParam(params, "nGenes", 100)
+#' 
+#' @rdname setParam
+#' @export
 setGeneric("setParam", function(object, name, value) {
   standardGeneric("setParam")
 })
 
-#' this function is borrowed from Splatter
+#' Get a parameter
+#'
+#' Accessor function for getting parameter values.
+#' This function is borrowed from Splatter.
+#' @param object object to get parameter from.
+#' @param name name of the parameter to get.
+#'
+#' @return The extracted parameter value
+#'
+#' @examples
+#' params <- newescoParams()
+#' getParam(params, "nGenes")
+#'
+#' @rdname getParam
+#' @export
+
+setGeneric("getParam", function(object, name) {standardGeneric("getParam")})
+
+
 #' Set a parameter UNCHECKED
+#'
+#' Function for setting parameter values. THE OUTPUT IS NOT CHECKED FOR
+#' VALIDITY! (This function is borrowed from Splatter).
+#'
+#' @param object object to set parameter in.
+#' @param name name of the parameter to set.
+#' @param value value to set the parameter to.
+#'
+#' @return Object with new parameter value.
+#'
+#' @rdname setParamUnchecked
 setGeneric("setParamUnchecked", function(object, name, value) {
   standardGeneric("setParamUnchecked")
 })
 
-#' this function is borrowed from Splatter
 #' Set parameters
+#'
+#' Set multiple parameters in a Params object.  (This function is borrowed from Splatter).
+#'
+#' @param object Params object to set parameters in.
+#' @param update list of parameters to set where \code{names(update)} are the
+#'        names of the parameters to set and the items in the list are values.
+#' @param ... additional parameters to set. These are combined with any
+#'        parameters specified in \code{update}.
+#'
+#' @details
+#' Each parameter is set by a call to \code{\link{setParam}}. If the same
+#' parameter is specified multiple times it will be set multiple times.
+#' Parameters can be specified using a list via \code{update} (useful when
+#' collecting parameter values in some way) or individually (useful when setting
+#' them manually), see examples.
+#'
+#' @return Params object with updated values.
+#'
+#' @examples
+#' params <- newescoParams()
+#' params
+#' # Set individually
+#' params <- setParams(params, nGenes = 1000, nCells = 50)
+#' params
+#' # Set via update list
+#' params <- setParams(params, list(mean.rate = 0.2, mean.shape = 0.8))
+#' params
+#'
+#' @rdname setParams
+#' @export
 setGeneric("setParams", function(object, update = NULL, ...) {
   standardGeneric("setParams")
 })
 
-#' this function is borrowed from Splatter
+
+# this function is borrowed from Splatter
 #' Expand parameters
+#' @rdname expandParams
 setGeneric("expandParams", function(object, ...) {
   standardGeneric("expandParams")
 })
 
-#' this function is borrowed from Splatter
-#' @importFrom methods slot
-setMethod("getParam", "Params", function(object, name) {
-  slot(object, name)
-})
 
-#' this function is borrowed from Splatter
+
+# this function is borrowed from Splatter
+#' @rdname setParam
 #' @importFrom methods slot<- validObject
 setMethod("setParam", "Params", function(object, name, value) {
   checkmate::assertString(name)
@@ -537,15 +467,24 @@ setMethod("setParam", "Params", function(object, name, value) {
   return(object)
 })
 
-#' this function is borrowed from Splatter
+# this function is borrowed from Splatter
+#' @rdname getParam
+#' @importFrom methods slot
+setMethod("getParam", "Params", function(object, name) {
+  slot(object, name)
+})
+
+# this function is borrowed from Splatter
 #' @importFrom methods slot<-
+#' @rdname setParamUnchecked
 setMethod("setParamUnchecked", "Params", function(object, name, value) {
   checkmate::assertString(name)
   slot(object, name) <- value
   return(object)
 })
 
-#' this function is borrowed from Splatter
+# this function is borrowed from Splatter
+#' @rdname setParam
 setMethod("setParams", "Params", function(object, update = NULL, ...) {
   
   checkmate::assertClass(object, classes = "Params")
@@ -563,26 +502,9 @@ setMethod("setParams", "Params", function(object, update = NULL, ...) {
   return(object)
 })
 
-#' this function is borrowed from Splatter
-#' @importFrom methods slotNames
-setMethod("show", "Params", function(object) {
-  
-  pp <- list("Global:" = c("(Genes)" = "nGenes",
-                           "(Cells)" = "nCells",
-                           "[Seed]"  = "seed"))
-  
-  cat("A", crayon::bold("Params"), "object of class",
-      crayon::bold(class(object)), "\n")
-  cat("Parameters can be (estimable) or",
-      paste0(crayon::blue("[not estimable]"), ","),
-      "'Default' or ", crayon::bold(crayon::green("'NOT DEFAULT'")), "\n")
-  cat(crayon::bgYellow(crayon::black("Secondary")), "parameters are usually",
-      "set during simulation\n\n")
-  showPP(object, pp)
-  cat(length(slotNames(object)) - 3, "additional parameters", "\n\n")
-})
-
-#' this function is borrowed from Splatter
+# this function is borrowed from Splatter
+#' @return object with new parameters.
+#' @rdname expandParams
 setMethod("expandParams", "Params", function(object, vectors, n) {
   
   update <- list()
@@ -597,5 +519,6 @@ setMethod("expandParams", "Params", function(object, vectors, n) {
   
   return(object)
 })
+
 
 

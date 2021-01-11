@@ -25,6 +25,7 @@
 #' @param height the height of the final pdf plot, default as 8.
 #' @param log whether take the log transform of the data
 #' @param norm whether take the counts per million normalization of the data
+#' @return heatmap plots showing immediately or pdf files saved to desinated directory.
 #' @importFrom NMF aheatmap
 #' @import viridis
 #' @import RColorBrewer
@@ -145,6 +146,7 @@ heatdata<-function(datalist, dirname = NULL, genes = NULL, cellinfo = NULL,
 #' @return heatmap plots showing immediately or pdf files saved to desinated directory.
 #' @importFrom NMF aheatmap
 #' @importFrom stats as.dist hclust
+#' @import RColorBrewer
 #' @import viridis
 #' @export
 #' @examples 

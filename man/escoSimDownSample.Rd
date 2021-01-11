@@ -5,8 +5,7 @@
 \title{Simulate observed count matrix though downsampling.
 (This function is borrowed from SymSim).}
 \usage{
-escoSimDownSample(sim, trial, verbose, numCores = 2, protocol = "UMI",
-  nbatch = 1)
+escoSimDownSample(sim, trial, verbose, numCores = 2, nbatch = 1)
 }
 \arguments{
 \item{sim}{SingleCellExperiment to add dropout to.}
@@ -20,8 +19,9 @@ noise is added independently for each trial}
 If set as NULL, then all the detected cores are used.}
 
 \item{nbatch}{number of batches, default is 1.}
-
-\item{protocal}{a string, can be "nonUMI" or "UMI", default is "UMI"}
+}
+\value{
+SingleCellExperiment with simulated dropout and observed counts.
 }
 \description{
 Simulate observed count matrix though downsampling.
