@@ -1,4 +1,3 @@
-
 #' Estimate esco simulation parameters
 #'
 #' Estimate simulation parameters for the esco simulation from a real
@@ -7,12 +6,19 @@
 #'
 #' @param counts either a counts matrix or a SingleCellExperiment object
 #'        containing count data to estimate parameters from.
+#' @param dirname a tring of directory name to indicate where to save the results
+#' @param group whether the data is believed to be of discrete cell groups or not, 
+#'        if yes, the corresponding cellinfo indicating the cell group labels need to be input as well
+#' @param cellinfo a vector of length n, where n is the number of cells. 
+#'        Each entries is the group identity of a cell.
 #' @param params escoParams object to store estimated values in.
 #'
 #' @seealso
 #' \code{\link{escoEstMean}},  \code{\link{escoEstLib}},
 #' \code{\link{escoEstOutlier}}, \code{\link{escoEstBCV}},
-#' \code{\link{escoEstDropout}}
+#' \code{\link{escoEstDropout}}, \code{\link{escoEstDE}},
+#' \code{\link{escoEstGroupMean}}, \code{\link{escoEstGroupLib}},
+#' \code{\link{escoEstGroupOutlier}}
 #'
 #' @return escoParams object containing the estimated parameters.
 #'
@@ -23,9 +29,10 @@
 #'
 #' params <- escoEstimate(sc_example_counts)
 #' params
+#' @rdname escoEstimate
 #' @importFrom splatter setParams setParam getParams getParam 
 #' @export
-escoEstimate <- function(counts, dirname, rho = FALSE, group = FALSE, metacell = NULL, cellinfo = NULL,params = newescoParams()) {
+escoEstimate <- function(counts, dirname, group = FALSE, cellinfo = NULL, params = newescoParams()) {
     UseMethod("escoEstimate")
 }
 
@@ -33,7 +40,7 @@ escoEstimate <- function(counts, dirname, rho = FALSE, group = FALSE, metacell =
 #' @importFrom splatter setParams setParam getParams getParam
 #' @export
 #' 
-escoEstimate.SingleCellExperiment <- function(counts, dirname, rho = FALSE, group = FALSE, metacell = NULL, cellinfo = NULL,
+escoEstimate.SingleCellExperiment <- function(counts, dirname, group = FALSE, cellinfo = NULL,
                                                params = newescoParams()) {
     counts <- BiocGenerics::counts(counts)
     escoEstimate(counts, params)
@@ -45,9 +52,9 @@ escoEstimate.SingleCellExperiment <- function(counts, dirname, rho = FALSE, grou
 #' @importFrom SC3 get_marker_genes
 #' @importFrom splatter setParams setParam getParams getParam
 #' @export
-escoEstimate.matrix <- function(counts, dirname, rho = FALSE, group = FALSE, metacell = NULL, cellinfo = NULL, params = newescoParams()) {
+escoEstimate.matrix <- function(counts, dirname, group = FALSE, cellinfo = NULL, params = newescoParams()) {
 
-    checkmate::assertClass(params, "escoParams")
+  checkmate::assertClass(params, "escoParams")
 
   if(!group){
     # Normalise for library size and remove all zero genes
@@ -66,24 +73,15 @@ escoEstimate.matrix <- function(counts, dirname, rho = FALSE, group = FALSE, met
     params <- escoEstOutlier(norm.counts, params)
     params <- escoEstBCV(counts, norm.counts, params)
    
-    
-    # if(rho){
-    #   params <- escoEstRho(norm.counts, metacell = NULL, params)
-    # }
     params <- setParams(params, nGenes = nrow(counts),
                         nCells = ncol(counts))
     params <- setParams(params, dropout.type = "zeroinflate")
     return(params)
   }
+  # if the cells are of discrete cell groups, the estimated differently
   else{
     lib.sizes <- colSums(counts)
     lib.med <- mean(lib.sizes)
-    
-    # for(i in 1:3){
-    #   subcells = as.character(subcellinfo$cell[which(cellinfo==unique(newcelltype)[i])])
-    #   norm.counts[,subcells] = mean(colSums(norm.counts))/mean(colSums(zeisel_subnorm[,subcells]))*zeisel_subnorm[,subcells]
-    # }
-    # 
     
     norm.counts <- t(t(counts) / lib.sizes * lib.med)
     saveRDS(norm.counts, paste0(dirname,  "normcounts.rds"))
@@ -122,27 +120,19 @@ escoEstimate.matrix <- function(counts, dirname, rho = FALSE, group = FALSE, met
   
     params <- escoEstGroupMean(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params)
     params <- escoEstBCV(counts, norm.counts, params, cellinfo)
-    #params <- escoEstOutlier(norm.counts, params)
     params <- escoEstGroupOutlier(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params)
     de <- escoEstDE(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params)
     de.facLoc = de[[1]]
     de.facScale = de[[2]]
     de.rank = de[[3]]
     de.facrank = de[[4]]
-    # params <- setParams(params, de.facLoc = de.facLoc,
-    #                     de.facScale  = de.facScale)
     params <- setParams(params, de.facLoc = de.facLoc,
                         de.facScale  = de.facScale,
                         de.rank = de.rank,
                         de.facrank = de.facrank, nGroups = length(de.rank))
     params <- escoEstDropout(counts, params)
     params <- setParams(params, dropout.type = "zeroinflate")
-    #params <- setParams(params, dropout.type = "experiment")
     
-    # if(rho){
-    #   params <- escoEstRholist(norm.counts, cellinfo = cellinfo, degenes = degenes, housegenes = housegenes, params)
-    # }
-
     params <- setParams(params, nGenes = nrow(counts), nCells = ncol(counts), deall.prob = deall.prob, house.prob = house.prob)
     return(params)
   }
@@ -157,10 +147,11 @@ escoEstimate.matrix <- function(counts, dirname, rho = FALSE, group = FALSE, met
 #' \code{\link[fitdistrplus]{fitdist}} for details on the fitting.
 #'
 #' @param counts counts matrix to estimate parameters from.
+#' @param norm.counts library size normalised counts matrix.
 #' @param params escoParams object to store estimated values in.
 #'
 #' @return escoParams object with estimated values.
-#'
+#' @rdname escoEstLib
 #' @importFrom stats shapiro.test
 #' @importFrom splatter setParams setParam getParams getParam
 escoEstLib <- function(counts, norm.counts, params) {
@@ -236,7 +227,8 @@ escoEstLib <- function(counts, norm.counts, params) {
 #' Estimate rate and shape parameters for the gamma distribution used to
 #' simulate gene expression means.
 #'
-#' @param norm.counts library size normalised counts matrix.
+#' @param normcounts library size normalised counts matrix.
+#' @param counts counts matrix to estimate parameters from.
 #' @param params escoParams object to store estimated values in.
 #'
 #' @details
@@ -249,7 +241,7 @@ escoEstLib <- function(counts, norm.counts, params) {
 #' and 90th percentiles.
 #' @import DescTools
 #' @importFrom splatter setParams setParam getParams getParam
-#'
+#' @rdname escoEstMean
 #' @return escoParams object with estimated values.
 escoEstMean <- function(normcounts, counts, params) {
   
@@ -290,23 +282,179 @@ escoEstMean <- function(normcounts, counts, params) {
 
 
 
-#' Estimate esco group mean parameters
+#' Estimate esco expression outlier parameters for a single cell group
 #'
-#' Estimate rate and shape parameters for the gamma distribution used to
-#' simulate gene expression means.
+#' Parameters are estimated by comparing means of individual genes to the
+#' median mean expression level.
 #'
 #' @param norm.counts library size normalised counts matrix.
 #' @param params escoParams object to store estimated values in.
 #'
 #' @details
+#' Expression outlier genes are detected using the Median Absolute Deviation
+#' (MAD) from median method. If the log2 mean expression of a gene is greater
+#' than two MADs above the median log2 mean expression it is designated as an
+#' outlier. The proportion of outlier genes is used to estimate the outlier
+#' probability. Factors for each outlier gene are calculated by dividing mean
+#' expression by the median mean expression. A log-normal distribution is then
+#' fitted to these factors in order to estimate the outlier factor location and
+#' scale parameters using \code{\link[fitdistrplus]{fitdist}}.
+#' @rdname escoEstOutlier
+#' @return escoParams object with estimated values.
+#' @importFrom splatter setParams setParam getParams getParam
+escoEstOutlier <- function(norm.counts, params) {
+  
+  means <- rowMeans(norm.counts)
+  lmeans <- log(means)
+  
+  med <- median(lmeans)
+  mad <- mad(lmeans)
+  
+  bound <- med + 2*mad
+  
+  outs <- which(lmeans > bound)
+  
+  prob <- length(outs) / nrow(norm.counts)
+  
+  params <- setParams(params, out.prob = prob)
+  
+  if (length(outs) > 1) {
+    facs <- means[outs] / median(means)
+    fit <- fitdistrplus::fitdist(facs, "lnorm")
+    
+    params <- setParams(params,
+                        out.facLoc = unname(fit$estimate["meanlog"]),
+                        out.facScale = unname(fit$estimate["sdlog"]))
+  }
+  
+  return(params)
+}
+
+#' Estimate esco Biological Coefficient of Variation parameters
+#'
+#' Parameters are estimated using the \code{\link[edgeR]{estimateDisp}} function
+#' in the \code{edgeR} package.
+#'
+#' @param counts counts matrix to estimate parameters from.
+#' @param norm.counts normalized counts matrix to estimate parameters from.
+#' @param params escoParams object to store estimated values in.
+#' @param cellinfo info about the identity of each cell in the cell structure.
+#'        If cellinfo is not null, then BCV is estiamted adjusted to the cell structures 
+#' @details
+#' The \code{\link[edgeR]{estimateDisp}} function is used to estimate the common
+#' dispersion and prior degrees of freedom. See
+#' \code{\link[edgeR]{estimateDisp}} for details. When estimating parameters on
+#' simulated data we found a broadly linear relationship between the true
+#' underlying common dispersion and the \code{edgR} estimate, therefore we
+#' apply a small correction, \code{disp = 0.1 + 0.25 * edgeR.disp}.
+#' @rdname escoEstBCV
+#' @return escoParams object with estimated values.
+#' @importFrom splatter setParams setParam getParams getParam
+escoEstBCV <- function(counts, norm.counts, params, cellinfo = NULL){
+  if(is.null(cellinfo)){
+    means = rowMeans(norm.counts)
+    drop.mid <- getParam(params, "dropout.mid")[1]
+    drop.shape <- getParam(params, "dropout.shape")
+    
+    #means <- winsorize(means, q = 0.01)
+    lmeans <- log(means)
+    drop.prob = logistic(lmeans, x0 = drop.mid, k = drop.shape)
+    keep.prob = (1 - drop.prob)
+    #keep.prob = (1 - drop.prob)/(1-dpois(0, lambda = means))
+    keep.prob[keep.prob<0] = 0
+    keep.prob[is.na(keep.prob)] = 0
+    keep.prob[keep.prob>1] = 1
+    counts = counts/keep.prob
+  }
+  
+  if(is.null(cellinfo)){
+    design <- matrix(1, ncol(counts), 1) 
+    disps <- edgeR::estimateDisp(counts, design = design)
+    params <- setParams(params,
+                        bcv.common = 0.1 + 0.25 * disps$common.dispersion,
+                        bcv.df = disps$prior.df)
+  }
+  else{
+    disps <- edgeR::estimateDisp(counts, group = cellinfo)
+    params <- setParams(params,
+                        bcv.common = 0.1 + 0.25 * disps$common.dispersion,
+                        bcv.df = disps$prior.df)
+  }
+  
+  
+  return(params)
+}
+
+
+#' Estimate esco dropout parameters
+#'
+#' Estimate the midpoint and shape parameters for the logistic function used
+#' when simulating dropout.
+#'
+#' @param norm.counts library size normalised counts matrix.
+#' @param params escoParams object to store estimated values in.
+#'
+#' @details
+#' Logistic function parameters are estimated by fitting a logistic function
+#' to the relationship between log2 mean gene expression and the proportion of
+#' zeros in each gene. See \code{\link[stats]{nls}} for details of fitting.
+#' Note this is done on the experiment level.
+#'
+#' @return escoParams object with estimated values.
+#' @rdname escoEstDropout
+#' @importFrom stats dnbinom nls
+#' @importFrom splatter setParams setParam getParams getParam
+escoEstDropout <- function(norm.counts, params) {
+  
+  means <- rowMeans(norm.counts)
+  
+  x <- log(means)
+  
+  obs.zeros <- rowSums(norm.counts == 0)
+  
+  y <- obs.zeros / ncol(norm.counts)
+  
+  df <- data.frame(x, y)
+  
+  x_approx_mid <- median(x[which(y > 0.0001 & y < 0.9999)])
+  fit <- nls(y ~ logistic(x, x0 = x0, k = k), data = df,
+             start = list(x0 = x_approx_mid, k = -1))
+  
+  mid <- summary(fit)$coefficients["x0", "Estimate"]
+  shape <- summary(fit)$coefficients["k", "Estimate"]
+  
+  params <- setParams(params, dropout.mid = mid, dropout.shape = shape)
+  
+  return(params)
+}
+
+
+
+
+#' Estimate esco mean parameters for discrete cell groups
+#'
+#' Estimate rate and shape parameters for the gamma distribution used to
+#' simulate gene expression means for each cell group.
+#'
+#' @param nonDE.normcounts library size normalised counts matrix for nonDE genes.
+#' @param DE.normcounts library size normalised counts matrix for DE genes.
+#' @param degenes a dataframe of two columns: "genes" and "clust", 
+#'        where "genes" contains the position of a degenes, and "clust" contains the 
+#'        corresponding cell group the degenes marks.
+#' @param cellinfo a vector of length n, where n is the number of cells. 
+#'        Each entries is the group identity of a cell.
+#' @param params escoParams object to store estimated values in.
+#' 
+#' @details
 #' Parameter for the gamma distribution are estimated by fitting the mean
-#' normalised counts using \code{\link[fitdistrplus]{fitdist}}. The 'maximum
-#' goodness-of-fit estimation' method is used to minimise the Cramer-von Mises
+#' normalised counts using \code{\link[fitdistrplus]{fitdist}}. Particularly, 
+#' the entries corresponds to DE genes in the cell group it marks are not considered in the fitting. 
+#' The 'maximum goodness-of-fit estimation' method is used to minimise the Cramer-von Mises
 #' distance. This can fail in some situations, in which case the 'method of
 #' moments estimation' method is used instead. Prior to fitting the means are
 #' winsorized by setting the top and bottom 10 percent of values to the 10th
 #' and 90th percentiles.
-#'
+#' @rdname escoEstGroupMean
 #' @return escoParams object with estimated values.
 #' @importFrom splatter setParams setParam getParams getParam
 escoEstGroupMean <- function(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params) {
@@ -338,24 +486,22 @@ escoEstGroupMean <- function(nonDE.normcounts, DE.normcounts, degenes, cellinfo,
 }
 
 
-
-
-
-
-
-#' Estimate esco library size parameters
+#' Estimate esco library size parameters for discrete cell groups
 #'
 #' The Shapiro-Wilks test is used to determine if the library sizes are
 #' normally distributed. If so a normal distribution is fitted to the library
 #' sizes, if not (most cases) a log-normal distribution is fitted and the
-#' estimated parameters are added to the params object. See
+#' estimated parameters are added to the params object. Specifically, for a cell group, the fitting
+#' process uses only the cell samples within this cell group. See
 #' \code{\link[fitdistrplus]{fitdist}} for details on the fitting.
 #'
 #' @param counts counts matrix to estimate parameters from.
+#' @param cellinfo a vector of length n, where n is the number of cells. 
+#'        Each entries is the group identity of a cell.
 #' @param params escoParams object to store estimated values in.
-#'
+#' 
 #' @return escoParams object with estimated values.
-#'
+#' @rdname escoEstGroupLib
 #' @importFrom stats shapiro.test
 #' @importFrom splatter setParams setParam getParams getParam
 escoEstGroupLib <- function(counts, cellinfo = NULL, params) {
@@ -365,7 +511,7 @@ escoEstGroupLib <- function(counts, cellinfo = NULL, params) {
     lib.loc = c()
     lib.scale = c()
     for(idx in 1:length(unique(cellinfo))){
-      cells = colnames(counts)[which(cellinfo!=levels(cellinfo)[idx])]
+      cells = colnames(counts)[which(cellinfo==levels(cellinfo)[idx])]
       lib.sizes <- colSums(counts[,cells])
       if (length(lib.sizes) > 5000) {
         message("NOTE: More than 5000 cells provided. ",
@@ -428,16 +574,22 @@ escoEstGroupLib <- function(counts, cellinfo = NULL, params) {
 
 
 
-#' Estimate esco expression DE parameters
+#' Estimate esco expression DE parameters for discrete cell groups
 #'
 #' Parameters are estimated by comparing means of individual genes to the
 #' median mean expression level.
 #'
-#' @param norm.counts library size normalised counts matrix.
+#' @param nonDE.normcounts library size normalised counts matrix for nonDE genes.
+#' @param DE.normcounts library size normalised counts matrix for DE genes.
+#' @param degenes a dataframe of two columns: "genes" and "clust", 
+#'        where "genes" contains the position of a degenes, and "clust" contains the 
+#'        corresponding cell group the degenes marks.
+#' @param cellinfo a vector of length n, where n is the number of cells. 
+#'        Each entries is the group identity of a cell.
 #' @param params escoParams object to store estimated values in.
-#'
+#' @rdname escoEstDE
 #' @details
-#' Expression outlier genes are detected using the Median Absolute Deviation
+#' Expression DE factor are detected using the Median Absolute Deviation
 #' (MAD) from median method. If the log2 mean expression of a gene is greater
 #' than two MADs above the median log2 mean expression it is designated as an
 #' outlier. The proportion of outlier genes is used to estimate the outlier
@@ -489,19 +641,27 @@ escoEstDE <- function(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params
 }
 
 
-#' Estimate esco Group expression outlier parameters
+#' Estimate esco Group expression outlier parameters for discrete cell groups
 #'
 #' Parameters are estimated by comparing means of individual genes to the
 #' median mean expression level.
 #'
-#' @param norm.counts library size normalised counts matrix.
+#' @param nonDE.normcounts library size normalised counts matrix for non DE genes.
+#' @param DE.normcounts library size normalised counts matrix for DE genes.
+#' @param degenes a dataframe of two columns: "genes" and "clust", 
+#'        where "genes" contains the position of a degenes, and "clust" contains the 
+#'        corresponding cell group the degenes marks.
+#' @param cellinfo a vector of length n, where n is the number of cells. 
+#'        Each entries is the group identity of a cell.
 #' @param params escoParams object to store estimated values in.
-#'
+#' @rdname escoEstGroupOutlier
 #' @details
 #' Expression outlier genes are detected using the Median Absolute Deviation
 #' (MAD) from median method. If the log2 mean expression of a gene is greater
 #' than two MADs above the median log2 mean expression it is designated as an
-#' outlier. The proportion of outlier genes is used to estimate the outlier
+#' outlier. Specifically, the meadian log2 mean expression for a degene is computed 
+#' with the cell samples that does not belongs to the cell group it marked. 
+#' The proportion of outlier genes is used to estimate the outlier
 #' probability. Factors for each outlier gene are calculated by dividing mean
 #' expression by the median mean expression. A log-normal distribution is then
 #' fitted to these factors in order to estimate the outlier factor location and
@@ -541,246 +701,3 @@ escoEstGroupOutlier <- function(nonDE.normcounts, DE.normcounts, degenes, cellin
 
     return(params)
 }
-
-#' Estimate esco expression outlier parameters
-#'
-#' Parameters are estimated by comparing means of individual genes to the
-#' median mean expression level.
-#'
-#' @param norm.counts library size normalised counts matrix.
-#' @param params escoParams object to store estimated values in.
-#'
-#' @details
-#' Expression outlier genes are detected using the Median Absolute Deviation
-#' (MAD) from median method. If the log2 mean expression of a gene is greater
-#' than two MADs above the median log2 mean expression it is designated as an
-#' outlier. The proportion of outlier genes is used to estimate the outlier
-#' probability. Factors for each outlier gene are calculated by dividing mean
-#' expression by the median mean expression. A log-normal distribution is then
-#' fitted to these factors in order to estimate the outlier factor location and
-#' scale parameters using \code{\link[fitdistrplus]{fitdist}}.
-#'
-#' @return escoParams object with estimated values.
-#' @importFrom splatter setParams setParam getParams getParam
-escoEstOutlier <- function(norm.counts, params) {
-  
-  means <- rowMeans(norm.counts)
-  lmeans <- log(means)
-  
-  med <- median(lmeans)
-  mad <- mad(lmeans)
-  
-  bound <- med + 2*mad
-  
-  outs <- which(lmeans > bound)
-  
-  prob <- length(outs) / nrow(norm.counts)
-  
-  params <- setParams(params, out.prob = prob)
-  
-  if (length(outs) > 1) {
-    facs <- means[outs] / median(means)
-    fit <- fitdistrplus::fitdist(facs, "lnorm")
-    
-    params <- setParams(params,
-                        out.facLoc = unname(fit$estimate["meanlog"]),
-                        out.facScale = unname(fit$estimate["sdlog"]))
-  }
-  
-  return(params)
-}
-
-#' Estimate esco Biological Coefficient of Variation parameters
-#'
-#' Parameters are estimated using the \code{\link[edgeR]{estimateDisp}} function
-#' in the \code{edgeR} package.
-#'
-#' @param counts counts matrix to estimate parameters from.
-#' @param params escoParams object to store estimated values in.
-#'
-#' @details
-#' The \code{\link[edgeR]{estimateDisp}} function is used to estimate the common
-#' dispersion and prior degrees of freedom. See
-#' \code{\link[edgeR]{estimateDisp}} for details. When estimating parameters on
-#' simulated data we found a broadly linear relationship between the true
-#' underlying common dispersion and the \code{edgR} estimate, therefore we
-#' apply a small correction, \code{disp = 0.1 + 0.25 * edgeR.disp}.
-#'
-#' @return escoParams object with estimated values.
-#' @importFrom splatter setParams setParam getParams getParam
-escoEstBCV <- function(counts, norm.counts, params, cellinfo = NULL){
-  if(is.null(cellinfo)){
-    means = rowMeans(norm.counts)
-    drop.mid <- getParam(params, "dropout.mid")[1]
-    drop.shape <- getParam(params, "dropout.shape")
-    
-    #means <- winsorize(means, q = 0.01)
-    lmeans <- log(means)
-    drop.prob = logistic(lmeans, x0 = drop.mid, k = drop.shape)
-    keep.prob = (1 - drop.prob)
-    #keep.prob = (1 - drop.prob)/(1-dpois(0, lambda = means))
-    keep.prob[keep.prob<0] = 0
-    keep.prob[is.na(keep.prob)] = 0
-    keep.prob[keep.prob>1] = 1
-    counts = counts/keep.prob
-  }
-  
-  
-    # Add dummy design matrix to avoid print statement
-    if(is.null(cellinfo)){
-      design <- matrix(1, ncol(counts), 1) 
-      disps <- edgeR::estimateDisp(counts, design = design)
-      params <- setParams(params,
-                          bcv.common = 0.1 + 0.25 * disps$common.dispersion,
-                          bcv.df = disps$prior.df)
-    }
-    else{
-      disps <- edgeR::estimateDisp(counts, group = cellinfo)
-      params <- setParams(params,
-                          bcv.common = 0.1 + 0.25 * disps$common.dispersion,
-                          bcv.df = disps$prior.df)
-    }
-
-
-    return(params)
-}
-
-#' Estimate esco dropout parameters
-#'
-#' Estimate the midpoint and shape parameters for the logistic function used
-#' when simulating dropout.
-#'
-# #' Also estimates whether dropout is likely to be
-# #' present in the dataset.
-#'
-#' @param norm.counts library size normalised counts matrix.
-#' @param params escoParams object to store estimated values in.
-#'
-#' @details
-#' Logistic function parameters are estimated by fitting a logistic function
-#' to the relationship between log2 mean gene expression and the proportion of
-#' zeros in each gene. See \code{\link[stats]{nls}} for details of fitting.
-#' Note this is done on the experiment level, more granular (eg. group or cell)
-#' level dropout is not estimated.
-#'
-# #' The
-# #' presence of dropout is determined by comparing the observed number of zeros
-# #' in each gene to the expected number of zeros from a negative binomial
-# #' distribution with the gene mean and a dispersion of 0.1. If the maximum
-# #' difference between the observed number of zeros and the expected number is
-# #' greater than 10 percent of the number of cells
-# #' (\code{max(obs.zeros - exp.zeros) > 0.1 * ncol(norm.counts)}) then dropout
-# #' is considered to be present in the dataset. This is a somewhat crude
-# #' measure but should give a reasonable indication. A more accurate approach
-# #' is to look at a plot of log2 mean expression vs the difference between
-# #' observed and expected number of zeros across all genes.
-#'
-#' @return escoParams object with estimated values.
-#'
-#' @importFrom stats dnbinom nls
-#' @importFrom splatter setParams setParam getParams getParam
-escoEstDropout <- function(norm.counts, params) {
-
-    means <- rowMeans(norm.counts)
-
-    x <- log(means)
-
-    obs.zeros <- rowSums(norm.counts == 0)
-
-    y <- obs.zeros / ncol(norm.counts)
-
-    df <- data.frame(x, y)
-    
-    x_approx_mid <- median(x[which(y > 0.0001 & y < 0.9999)])
-    fit <- nls(y ~ logistic(x, x0 = x0, k = k), data = df,
-               start = list(x0 = x_approx_mid, k = -1))
-
-    #exp.zeros <- dnbinom(0, mu = means, size = 1 / 0.1) * ncol(norm.counts)
-
-    #present <- max(obs.zeros - exp.zeros) > 0.1 * ncol(norm.counts)
-
-    mid <- summary(fit)$coefficients["x0", "Estimate"]
-    shape <- summary(fit)$coefficients["k", "Estimate"]
-
-    params <- setParams(params, dropout.mid = mid, dropout.shape = shape)
-
-    return(params)
-}
-
-#' Logistic function
-#'
-#' Implementation of the logistic function (this function is borrowed from splatter)
-#'
-#' @param x value to apply the function to.
-#' @param x0 midpoint parameter. Gives the centre of the function.
-#' @param k shape parameter. Gives the slope of the function.
-#'
-#' @return Value of logistic funciton with given parameters
-logistic <- function(x, x0, k) {
-  1 / (1 + exp(-k * (x - x0)))
-}
-
-#' Bind rows (matched)
-#'
-#' Bind the rows of two data frames, keeping only the columns that are common
-#' to both (this function is borrowed from splatter).
-#'
-#' @param df1 first data.frame to bind.
-#' @param df2 second data.frame to bind.
-#'
-#' @return data.frame containing rows from \code{df1} and \code{df2} but only
-#'         common columns.
-rbindMatched <- function(df1, df2) {
-  common.names <- intersect(colnames(df1), colnames(df2))
-  if (length(common.names) < 2) {
-    stop("There must be at least two columns in common")
-  }
-  combined <- rbind(df1[, common.names], df2[, common.names])
-  
-  return(combined)
-}
-
-#' Winsorize vector
-#'
-#' Set outliers in a numeric vector to a specified percentile (this function is borrowed from splatter).
-#'
-#' @param x Numeric vector to winsorize
-#' @param q Percentile to set from each end
-#' @return Winsorized numeric vector
-winsorize <- function(x, q) {
-  
-  checkmate::check_numeric(x, any.missing = FALSE)
-  checkmate::check_number(q, lower = 0, upper = 1)
-  
-  lohi <- stats::quantile(x, c(q, 1 - q), na.rm = TRUE)
-  
-  if (diff(lohi) < 0) { lohi <- rev(lohi) }
-  
-  x[!is.na(x) & x < lohi[1]] <- lohi[1]
-  x[!is.na(x) & x > lohi[2]] <- lohi[2]
-  
-  return(x)
-}
-
-# library("copula")
-# library("stats")
-# library("VineCopula")
-# 
-# estimate_copula<-function(data) { 
-#   corr_mat <- matrix(1, nrow= nrow(data), ncol = ncol(data))
-#   data_col <- matrix(c(0,0), nrow=ncol(data), ncol = 2)
-#   for (i in 1:(nrow(data)-1)){
-#     for (j in (i+1):nrow(data)){
-#       data_col[,1]=t(data[i,])
-#       data_col[,2]=t(data[j,])
-#       m = pobs(data_col)
-#       cop = normalCopula(dim = 2)
-#       fit = fitCopula(cop, m, method = 'ml')
-#       corr_mat[i,j] = coef(fit)[1]
-#       corr_mat[j,i] = corr_mat[i,j] 
-#     }
-#   }
-#   return(corr_mat)
-# }
-
-

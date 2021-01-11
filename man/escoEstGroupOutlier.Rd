@@ -2,15 +2,24 @@
 % Please edit documentation in R/esco-estimate.R
 \name{escoEstGroupOutlier}
 \alias{escoEstGroupOutlier}
-\title{Estimate esco Group expression outlier parameters}
+\title{Estimate esco Group expression outlier parameters for discrete cell groups}
 \usage{
 escoEstGroupOutlier(nonDE.normcounts, DE.normcounts, degenes, cellinfo,
   params)
 }
 \arguments{
-\item{params}{escoParams object to store estimated values in.}
+\item{nonDE.normcounts}{library size normalised counts matrix for non DE genes.}
 
-\item{norm.counts}{library size normalised counts matrix.}
+\item{DE.normcounts}{library size normalised counts matrix for DE genes.}
+
+\item{degenes}{a dataframe of two columns: "genes" and "clust", 
+where "genes" contains the position of a degenes, and "clust" contains the 
+corresponding cell group the degenes marks.}
+
+\item{cellinfo}{a vector of length n, where n is the number of cells. 
+Each entries is the group identity of a cell.}
+
+\item{params}{escoParams object to store estimated values in.}
 }
 \value{
 escoParams object with estimated values.
@@ -23,7 +32,9 @@ median mean expression level.
 Expression outlier genes are detected using the Median Absolute Deviation
 (MAD) from median method. If the log2 mean expression of a gene is greater
 than two MADs above the median log2 mean expression it is designated as an
-outlier. The proportion of outlier genes is used to estimate the outlier
+outlier. Specifically, the meadian log2 mean expression for a degene is computed 
+with the cell samples that does not belongs to the cell group it marked. 
+The proportion of outlier genes is used to estimate the outlier
 probability. Factors for each outlier gene are calculated by dividing mean
 expression by the median mean expression. A log-normal distribution is then
 fitted to these factors in order to estimate the outlier factor location and

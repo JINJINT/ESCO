@@ -9,6 +9,8 @@ escoEstLib(counts, norm.counts, params)
 \arguments{
 \item{counts}{counts matrix to estimate parameters from.}
 
+\item{norm.counts}{library size normalised counts matrix.}
+
 \item{params}{escoParams object to store estimated values in.}
 }
 \value{

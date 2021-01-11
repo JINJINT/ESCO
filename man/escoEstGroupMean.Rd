@@ -2,27 +2,37 @@
 % Please edit documentation in R/esco-estimate.R
 \name{escoEstGroupMean}
 \alias{escoEstGroupMean}
-\title{Estimate esco group mean parameters}
+\title{Estimate esco mean parameters for discrete cell groups}
 \usage{
 escoEstGroupMean(nonDE.normcounts, DE.normcounts, degenes, cellinfo,
   params)
 }
 \arguments{
-\item{params}{escoParams object to store estimated values in.}
+\item{nonDE.normcounts}{library size normalised counts matrix for nonDE genes.}
 
-\item{norm.counts}{library size normalised counts matrix.}
+\item{DE.normcounts}{library size normalised counts matrix for DE genes.}
+
+\item{degenes}{a dataframe of two columns: "genes" and "clust", 
+where "genes" contains the position of a degenes, and "clust" contains the 
+corresponding cell group the degenes marks.}
+
+\item{cellinfo}{a vector of length n, where n is the number of cells. 
+Each entries is the group identity of a cell.}
+
+\item{params}{escoParams object to store estimated values in.}
 }
 \value{
 escoParams object with estimated values.
 }
 \description{
 Estimate rate and shape parameters for the gamma distribution used to
-simulate gene expression means.
+simulate gene expression means for each cell group.
 }
 \details{
 Parameter for the gamma distribution are estimated by fitting the mean
-normalised counts using \code{\link[fitdistrplus]{fitdist}}. The 'maximum
-goodness-of-fit estimation' method is used to minimise the Cramer-von Mises
+normalised counts using \code{\link[fitdistrplus]{fitdist}}. Particularly, 
+the entries corresponds to DE genes in the cell group it marks are not considered in the fitting. 
+The 'maximum goodness-of-fit estimation' method is used to minimise the Cramer-von Mises
 distance. This can fail in some situations, in which case the 'method of
 moments estimation' method is used instead. Prior to fitting the means are
 winsorized by setting the top and bottom 10 percent of values to the 10th

@@ -2,7 +2,8 @@
 % Please edit documentation in R/esco-simulate.R
 \name{amplify_cell}
 \alias{amplify_cell}
-\title{This function simulates the amplification, library prep, and the sequencing processes using methods in SymSim.}
+\title{Simulate amplification, library prep, and the sequencing processes.
+(This function is borrowed from SymSim).}
 \usage{
 amplify_cell(true_counts_1cell, protocol, rate_2cap, gene_len, amp_bias,
   rate_2PCR, nPCR1, nPCR2, LinearAmp, LinearAmp_coef, N_molecules_SEQ)
@@ -22,6 +23,8 @@ amplify_cell(true_counts_1cell, protocol, rate_2cap, gene_len, amp_bias,
 
 \item{nPCR1}{the number of PCR cycles}
 
+\item{nPCR2}{the number of second PCR cycles}
+
 \item{LinearAmp}{if linear amplification is used for pre-amplification step, default is FALSE}
 
 \item{LinearAmp_coef}{the coeficient of linear amplification, that is, how many times each molecule is amplified by}
@@ -32,5 +35,10 @@ amplify_cell(true_counts_1cell, protocol, rate_2cap, gene_len, amp_bias,
 read counts (if protocol="nonUMI") or UMI counts (if protocol="UMI)
 }
 \description{
-This function simulates the amplification, library prep, and the sequencing processes using methods in SymSim.
+Simulate amplification, library prep, and the sequencing processes.
+(This function is borrowed from SymSim).
+}
+\references{
+Zhang X, Xu C, Yosef N. Simulating multiple faceted variability in single cell RNA sequencing. 
+Nature communications. 2019 Jun 13;10(1):1-6. \url{https://www.nature.com/articles/s41467-019-10500-w}
 }

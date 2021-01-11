@@ -2,12 +2,15 @@
 % Please edit documentation in R/esco-estimate.R
 \name{escoEstGroupLib}
 \alias{escoEstGroupLib}
-\title{Estimate esco library size parameters}
+\title{Estimate esco library size parameters for discrete cell groups}
 \usage{
 escoEstGroupLib(counts, cellinfo = NULL, params)
 }
 \arguments{
 \item{counts}{counts matrix to estimate parameters from.}
+
+\item{cellinfo}{a vector of length n, where n is the number of cells. 
+Each entries is the group identity of a cell.}
 
 \item{params}{escoParams object to store estimated values in.}
 }
@@ -18,6 +21,7 @@ escoParams object with estimated values.
 The Shapiro-Wilks test is used to determine if the library sizes are
 normally distributed. If so a normal distribution is fitted to the library
 sizes, if not (most cases) a log-normal distribution is fitted and the
-estimated parameters are added to the params object. See
+estimated parameters are added to the params object. Specifically, for a cell group, the fitting
+process uses only the cell samples within this cell group. See
 \code{\link[fitdistrplus]{fitdist}} for details on the fitting.
 }

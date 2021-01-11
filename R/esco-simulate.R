@@ -1,7 +1,7 @@
 #' ESCO simulation
 #'
-#' Simulate count data from a fictional single-cell RNA-seq experiment using
-#' the hierarchical copula model.
+#' Simulate count data for a fictional single-cell RNA-seq experiment using
+#' a hierarchical copula model.
 #'
 #' @param type which type of heterogenounity to use. Options are :
 #'        "single" which produces a single population;
@@ -9,12 +9,15 @@
 #'        "tree"  which produces distinct groups but admits a tree structure;
 #'        "traj"  which produces distinct groups but admits a smooth trajectory structure.
 #' @param verbose logical. Whether to print progress messages.
+#' @param params escoParams object to store simulation configurations in.
+#' @param numCores the number of cores used for parallelization, default is 2.
+#'        If set as NULL, then all the detected cores are used.
 #' @param ... any additional parameter settings to override what is provided in
 #'        \code{\link{params}}.
 #'
 #' @details
 #' Parameters can be set in a variety of ways. If no parameters are provided
-#' the default parameters are used. We adopts the way in splatter to set up parameters, particularly, 
+#' the default parameters are used. We adopts the way in \code{\link[splatter]{splatter}} to set up parameters, particularly, 
 #' any parameters in \code{\link{params}} can be
 #' overridden by supplying additional arguments through a call to
 #' \code{\link{setParams}}. This design allows the user flexibility in
@@ -26,10 +29,10 @@
 #' \enumerate{
 #'     \item Set up simulation object
 #'     \item Simulate library sizes
-#'     \item Simulate base gene means
-#'     \item Simulate groups / tree / path structure differential factors
-#'     \item Simulate mean variance relationship adjusted cell means
-#'     \item Simulate true counts with / without correlation
+#'     \item Simulate base mean for genes
+#'     \item Simulate cell structure (group / tree / trajectory) related differential factors
+#'     \item Simulate mean variance relationship adjusted mean for genes in different cells
+#'     \item Simulate true counts (with / without correlation)
 #'     \item Simulate techinical noise (zeroinflation / downsampling)
 #'     \item Create final dataset
 #' }
@@ -53,35 +56,40 @@
 #'
 #' Paper: \url{https://www.biorxiv.org/content/10.1101/2020.10.20.347211v1}
 #'
-#' Code: \url{https://github.com/JINJINT/}
+#' Code: \url{https://github.com/JINJINT/ESCO}
 #'
 #' @seealso
-#' \code{\link{escoSimLibSizes}}, 
+#' \code{\link{escoSimLib}}, 
 #' \code{\link{escoSimGeneMeans}},
-#' \code{\link{escoSimMeans}},
-#' \code{\link{escoSimDE}}, 
-#' \code{\link{escoSimCellMeans}}, 
+#' \code{\link{escoSimGroupDE}}, 
+#' \code{\link{escoSimTreeDE}}, 
+#' \code{\link{escoSimTrajDE}}, 
+#' \code{\link{escoSimSingleCellMeans}}, 
+#' \code{\link{escoSimGroupCellMeans}}, 
+#' \code{\link{escoSimTreeCellMeans}}, 
+#' \code{\link{escoSimTrajCellMeans}}, 
 #' \code{\link{escoSimTrueCounts}},
-#' \code{\link{escoSimDropout}}
+#' \code{\link{escoSimZeroInflate}},
+#' \code{\link{escoSimDownSample}}
 #'
 #' @examples
 #' # Simulation with default parameters
 #' sim <- escoSimulate()
-#' \dontrun{
+#' 
 #' # Simulation with different number of genes
-#' sim <- escoSimulate(nGenes = 1000)
+#' # sim <- escoSimulate(nGenes = 1000)
 #' # Simulation with custom parameters
 #' params <- newescoParams(nGenes = 100, mean.rate = 0.5)
-#' sim <- escoSimulate(params)
+#' # sim <- escoSimulate(params)
 #' # Simulation with adjusted custom parameters
-#' sim <- escoSimulate(params, mean.rate = 0.6, out.prob = 0.2)
+#' # sim <- escoSimulate(params, mean.rate = 0.6, out.prob = 0.2)
 #' # Simulate group
-#' sim <- escoSimulate(type = "group")
+#' # sim <- escoSimulate(type = "group")
 #' # Simulate tree
-#' sim <- escoSimulate(type = "tree")
+#' # sim <- escoSimulate(type = "tree")
 #' # Simulate traj
-#' sim <- escoSimulate(type = "traj")
-#' }
+#' # sim <- escoSimulate(type = "traj")
+#' 
 #' @importFrom SummarizedExperiment rowData colData colData<- assays 
 #' @importFrom S4Vectors metadata metadata<-
 #' @importFrom SingleCellExperiment SingleCellExperiment
@@ -104,8 +112,8 @@ escoSimulate <- function(params = newescoParams(),
     validObject(params)
 
     # Set random seed
-    seed <- getParam(params, "seed")
-    set.seed(seed)
+    # seed <- getParam(params, "seed")
+    # set.seed(seed)
 
     # Get the parameters we are going to use
     nCells <- getParam(params, "nCells")
@@ -154,18 +162,20 @@ escoSimulate <- function(params = newescoParams(),
                          replace = TRUE)
         colData(sim)$Group <- group.names[groups]
     }
-
-    if (verbose) {message("Simulating library sizes...")}
-    sim <- escoSimLibSizes(sim, verbose)
     
+    if (verbose) {message("Simulating library sizes...")}
+    sim <- escoSimLib(sim, verbose)
+    
+    # simulating the base gene means
     if (verbose) {message("Simulating gene means...")}
     sim <- escoSimGeneMeans(sim, verbose)
     
+    # simulating gene means in different cells
     if (type == "single") {
         sim <- escoSimSingleCellMeans(sim, verbose)
     }
     if (type == "group") {
-        if (verbose) {message("Simulating group DE...")}
+        if (verbose) {message("Simulating groups...")}
         sim <- escoSimGroupDE(sim, verbose)
         if (verbose) {message("Simulating cell means...")}
         sim <- escoSimGroupCellMeans(sim, verbose)
@@ -178,15 +188,16 @@ escoSimulate <- function(params = newescoParams(),
     }
     if(type == "traj") { 
       if (verbose) {message("Simulating trajectory...")}
-      sim <- escoSimPathDE(sim, verbose)
+      sim <- escoSimTrajDE(sim, verbose)
       if (verbose) {message("Simulating cell means...")}
-      sim <- escoSimPathCellMeans(sim, verbose)
+      sim <- escoSimTrajCellMeans(sim, verbose)
     }
     
+    # simulating the true counts
     if (verbose) {message("Simulating true counts...")}
     sim <- escoSimTrueCounts(sim, type, verbose,numCores)
     
-    
+    # get parameters related to trials
     params <- metadata(sim)$Params
     trials <- getParam(params, "trials")
 
@@ -197,13 +208,14 @@ escoSimulate <- function(params = newescoParams(),
         metadata(sim)$Params= params
     }
     
+    # get parameters related to noise
     dropout.type = getParam(params, "dropout.type")
     
     if(!dir.exists(dirname)){
       if (verbose) message("Adding technical noise ...")
       if(length(dropout.type)>0){
-        if("zeroinflate" %in% dropout.type)sim<-Observed_Counts(sim, "", verbose,numCores) 
-        if("downsample" %in% dropout.type)sim<-escoSimDropout(sim, "", verbose)
+        if("zeroinflate" %in% dropout.type)sim<-escoSimDownSample(sim, "", verbose,numCores) 
+        if("downsample" %in% dropout.type)sim<-escoSimZeroInflate(sim, "", verbose)
       }
       return(sim)
     }
@@ -215,22 +227,20 @@ escoSimulate <- function(params = newescoParams(),
         if(verbose)message("Starting multiple trials.....")
         for(trial in 1:trials){
           if(dropout.type!="none"){
-            if("downsample" %in% dropout.type)sim<-Observed_Counts(sim, trial,verbose,numCores) 
-            if("zeroinflate" %in% dropout.type)sim<-escoSimDropout(sim, trial,verbose)
+            if("downsample" %in% dropout.type)sim<-escoSimDownSample(sim, trial,verbose,numCores) 
+            if("zeroinflate" %in% dropout.type)sim<-escoSimZeroInflate(sim, trial,verbose)
           }
         }
       }
       else{
         if(dropout.type!="none"){
-          if("downsample" %in% dropout.type)sim<-Observed_Counts(sim, "",verbose,numCores) 
-          if("zeroinflate" %in% dropout.type)sim<-escoSimDropout(sim, "",verbose)
+          if("downsample" %in% dropout.type)sim<-escoSimDownSample(sim, "",verbose,numCores) 
+          if("zeroinflate" %in% dropout.type)sim<-escoSimZeroInflate(sim, "",verbose)
         }
       }
       if(dir.exists(dirname))saveRDS(sim, paste0(dirname, "sim.rds"))
       return(sim)
     }
-    
-
 }
 
 #' @rdname escoSimulate
@@ -277,14 +287,14 @@ escoSimulateTraj <- function(params = newescoParams(),
 #' negative values are set to half the minimum non-zero value.
 #'
 #' @param sim SingleCellExperiment to add library size to.
-#'
+#' @param verbose whether to print the process or not.
 #' @return SingleCellExperiment with simulated library sizes.
 #'
 #' @importFrom SummarizedExperiment colData colData<- 
 #' @importFrom S4Vectors metadata metadata<-
 #' @importFrom stats rlnorm rnorm
 #' @rdname escoSimLib
-escoSimLibSizes <- function(sim, verbose) {
+escoSimLib <- function(sim, verbose) {
     params <- metadata(sim)$Params
     nCells <- getParam(params, "nCells")
     Groups <- colData(sim)$Group
@@ -334,21 +344,20 @@ escoSimLibSizes <- function(sim, verbose) {
 
 #' Simulate gene means
 #'
-#' Simulate gene means from a gamma distribution. Also simulates outlier
+#' Simulate base gene means from a gamma distribution. Also simulates outlier
 #' expression factors. Genes with an outlier factor not equal to 1 are replaced
 #' with the median mean expression multiplied by the outlier factor.
 #'
 #' @param sim SingleCellExperiment to add gene means to.
-#'
+#' @param verbose whether to print the process or not.
 #' @return SingleCellExperiment with simulated gene means.
 #'
 #' @importFrom SummarizedExperiment rowData rowData<-
 #' @importFrom S4Vectors metadata metadata<-
 #' @importFrom stats rgamma median
-#' @rdname escoSimMean
+#' @rdname escoSimGeneMean
 escoSimGeneMeans <- function(sim, verbose) {
     params <- metadata(sim)$Params
-    
     nGenes <- getParam(params, "nGenes")
     nCells <- getParam(params, "nCells")
     mean.shape <- getParam(params, "mean.shape")
@@ -397,18 +406,16 @@ escoSimGeneMeans <- function(sim, verbose) {
     return(sim)
 }
 
-#' Simulate group differential expression
+#' Simulate differential expression (DE) factors for discrete groups
 #'
-#' Simulate differential expression. Differential expression factors for each
-#' group are produced using \code{\link{getLNormFactors}} and these are added
-#' along with updated means for each group. For paths care is taked to make sure
-#' they are simulated in the correct order.
+#' DE factors for each group are produced using \code{\link{getLNormFactors}} and these are added
+#' along with updated means for each group. 
 #'
 #' @param sim SingleCellExperiment to add differential expression to.
-#'
+#' @param verbose logical. Whether to print progress messages.
 #' @return SingleCellExperiment with simulated differential expression.
 #'
-#' @rdname escoSimDE
+#' @rdname escoSimGroupDE
 #' @importFrom SummarizedExperiment rowData 
 #' @importFrom S4Vectors metadata metadata<-
 #' @importFrom stats ecdf
@@ -419,27 +426,22 @@ escoSimGroupDE <- function(sim, verbose) {
     
     gene.names <- rowData(sim)$Gene
     gene.means <- rowData(sim)$GeneMean
-    #percen <- ecdf(gene.means)
-    #percentile <- percen(gene.means)
     
+    # get the parameters related to DE factor of discrete cell group 
     de.prob <- getParam(params, "de.prob")
     nGroups <- getParam(params, "nGroups")
-    #de.downProb <- getParam(params, "de.downProb")
     de.facLoc <- getParam(params, "de.facLoc")
     de.facScale <- getParam(params, "de.facScale")
     deall.prob <- getParam(params, "deall.prob")
-    #de.quantile <-  getParam(params, "de.quantile")
     corr<-getParam(params, "corr")
     de.rank <- getParam(params, "de.rank")
     de.facrank <- getParam(params, "de.facrank")
     
+    #===== choose the identity of DE genes
+    # if the correlation structure is given, then those correlated genes as DE genes
     if(length(corr)==nGroups+1){
       len = lapply(corr[2:length(corr)], nrow)
       len = unlist(len, use.names=FALSE)
-      # for(idx in 1:length(de.quantile)){
-      #   which(percentile == de.quantile[idx])
-      #   deall.genes = sample(percentile, len[idx])
-      # }
       deall.genes = sample(nGenes, sum(len))
       deall.prob = length(deall.genes)/nGenes
       de.prob = len/length(deall.genes)
@@ -448,7 +450,9 @@ escoSimGroupDE <- function(sim, verbose) {
       markers = rep(0, nGenes)
       markers[deall.genes] = marker.genes
     }
+    # if the correlation structure is not given, then choose DE genes according to other rules
     else{
+      # if the rank of means of DE genes are given (de.rank), then those with matching ranks are treated as DE genes
       if(length(de.rank)==nGroups){
         markers = rep(0, nGenes)
         ordsim = sort(gene.means, index.return = TRUE)$ix
@@ -465,6 +469,7 @@ escoSimGroupDE <- function(sim, verbose) {
         params<-setParams(params, deall.prob = deall.prob, de.prob = de.prob)
       }
       else{
+        # otherwise, the DE genes are sampled randomly according to de.prob
         deall.genes = sample(nGenes, floor(deall.prob*nGenes))
         rowData(sim)$DEgenes = rep(0, nGenes)
         rowData(sim)$DEgenes[deall.genes] = 1
@@ -473,7 +478,8 @@ escoSimGroupDE <- function(sim, verbose) {
         markers[deall.genes] = marker.genes
       }
     }
-      
+    
+    #===== simulate the de factors for the choosen DE genes   
     for(idx in seq_len(nGroups)){
         markershere = (markers==idx)
         de.facs <- getLNormFactors(nGenes, markershere, 0,
@@ -494,8 +500,28 @@ escoSimGroupDE <- function(sim, verbose) {
     return(sim)
 }
 
-
-#' @rdname escoSimDE
+#' Simulate differential expression (DE) factors for tree structure
+#'
+#' DE factors for each tree branches are produced using \code{\link{getLNormFactors}} with 
+#' means follows a multivariate normal ditribution, where the correlation relationship is generated from the tree structure.
+#' 
+#' @details
+#' The method of simulating paths is inspired by the method used in SymSim
+#' simulation. Particularly, the tree structure is generated by making the 
+#' DE factors more similar for closer tree branches,
+#' and less similar for far away tree branches. The tree structure is input through \code{tree} in \code{params}, 
+#' and we generate the relationship between DE factors for different branches from the estimated evolutionary 
+#' variance-covariance matrix of the tree using \code{\link{vcv.phylo}}.
+#' 
+#' @references
+#' Zhang, X., Xu, C. & Yosef, N. Simulating multiple faceted variability in single cell RNA sequencing. 
+#' Nat Commun 10, 2611 (2019). \url{https://doi.org/10.1038/s41467-019-10500-w}.
+#'
+#' @param sim SingleCellExperiment to add differential expression to.
+#' @param verbose logical. Whether to print progress messages
+#' @return SingleCellExperiment with simulated differential expression.
+#'
+#' @rdname escoSimTreeDE
 #' @importFrom SummarizedExperiment rowData 
 #' @importFrom S4Vectors metadata metadata<-
 #' @importFrom ape vcv.phylo
@@ -503,36 +529,36 @@ escoSimGroupDE <- function(sim, verbose) {
 escoSimTreeDE <- function(sim, verbose) {
   params <- metadata(sim)$Params
   
+  # get the parameters related to tree structure and DE configurations
   tree<- getParam(params, "tree")[[1]]
   de.center<-getParam(params, "de.center")
   deall.prob <- getParam(params, "deall.prob")
   de.prob <- getParam(params, "de.prob")
-  
-  nGenes <- getParam(params, "nGenes")
-  nGroups <- getParam(params, "nGroups")
-  corr<-getParam(params, "corr")
-  
-  if(length(corr)>0 & length(corr)!=nGroups){
-    params<-setParams(params, corr = list())
-    cat("Sorry, cannot use given correlation matrix when simulating tree strucutre.....\n
-        Using randmized instead...\n")
-  }
-  
-  gene.names <- rowData(sim)$Gene
-  
-  de.prob <- getParam(params, "de.prob")
   de.downProb <- getParam(params, "de.downProb")
   de.facLoc <- getParam(params, "de.facLoc")
   de.facScale <- getParam(params, "de.facScale")
+  corr <- getParam(params, "corr")
+  withcorr <- getParam(params, "withcorr")
   
+  # get the parameters related to data size 
+  nGenes <- getParam(params, "nGenes")
+  nGroups <- getParam(params, "nGroups")
+
+  if(length(corr)>0 & length(corr)!=nGroups){
+    params<-setParams(params, corr = list())
+  }
+  
+  #===== choose the identity of DE genes
+  gene.names <- rowData(sim)$Gene
   deall.genes = sample(nGenes, floor(deall.prob*nGenes))
   rowData(sim)$DEgenes = rep(0, nGenes)
   rowData(sim)$DEgenes[deall.genes] = 1
   marker.genes = sample(seq_len(nGroups), size = length(deall.genes), replace = TRUE, prob = de.prob)
   markers = rep(0, nGenes)
-
+  
+  #==== simulate the de factor according to tree structure
   markers[deall.genes] = 1
-  treecor <- vcv.phylo(tree, cor=T)
+  treecor <- vcv.phylo(tree, corr=TRUE)
   treecor = sqrt(treecor)
   de.facLocvec = matrix(0, nGenes, nGroups)
   de.facLocvec[deall.genes,] <- mvrnorm(length(deall.genes), rep(de.center, nGroups), treecor)
@@ -546,30 +572,18 @@ escoSimTreeDE <- function(sim, verbose) {
   return(sim)
 }
 
-
-#' Simulate trajectory
+#' Simulate differential expression (DE) factors for trajectory
 #'
-#' Simulate gene means for each step along each path of a esco simulation
-#'
-#' @param params escoParams object containing simulation parameters.
-#' @param verbose logical. Whether to print progress messages
-#' @importFrom S4Vectors metadata metadata<-
-#'
+#' The DE factor for DE genes are simulated for each step along each path (branches of trajectory)
+#' 
 #' @details
 #' The method of simulating paths is inspired by the method used in the PROSSTT
-#' simulation. Changes in expression are controlled by \code{paths.nPrograms}
-#' regulatory programs. Each of the regulatory genes in the gene network has
-#' some association with each program. This is analogous to there being changes
-#' in the environment (the programs) which are sensed by receptors (regulatory
-#' genes) and cause changes in expression downstream. For each path a random
-#' walk is generated for each program and the changes passed on to the
-#' regulatory genes. At each step the changes propagate through the network
-#' according to the weights on edges between genes. This algorithm is fairly
-#' simple but should result in correlation relationships between genes. However
-#' it is likely to be improved and adjusted in the future.
+#' simulation. Changes in expression are controlled by \code{paths.changes}
+#' regulatory programs. For each path a random walk through \code{paths.diffusion} 
+#' and \code{paths.velocity} is generated for each DE genes. 
 #'
 #' The path structure itself is specified by the \code{paths.design} parameter.
-#' This is a \code{data.frame} with three columns: "traj", "From", and "Steps".
+#' This is a \code{data.frame} with three columns: "Path", "From", and "Steps".
 #' The Path field is an ID for each path while the Steps field controls the
 #' length of each path. Increasing the number of steps will increase the
 #' difference in expression between the ends of the paths. The From field sets
@@ -577,16 +591,20 @@ escoSimTreeDE <- function(sim, verbose) {
 #' would indicate three paths from the origin while a From of \code{0, 1, 1}
 #' would give a branching structure with Path 1 beginning at the origin and
 #' Path 2 and Path 3 beginning at the end of Path 1.
-#'
+
+#' @param sim SingleCellExperiment to add differential expression to.
+#' @param verbose logical. Whether to print progress messages
+#' @return SingleCellExperiment with simulated trajetory means.
 #' @references
 #'
 #' Papadopoulos N, Parra RG, Söding J. PROSSTT: probabilistic simulation of
 #' single-cell RNA-seq data for complex differentiation processes.
 #' Bioinformatics (2019). \url{https://doi.org/10.1093/bioinformatics/btz078}.
 #'
-#' @return SingleCellExperiment with simulated trajetory means.
-#' @rdname escoSimDE
-escoSimPathDE <- function(sim, verbose) {
+#' @rdname escoSimTrajDE
+#' @importFrom S4Vectors metadata metadata<-
+#' @importFrom igraph graph_from_data_frame topo_sort
+escoSimTrajDE <- function(sim, verbose) {
   params = metadata(sim)$Params
   if (verbose) {message("Simulating trajetories...")}
   nGenes <- getParam(params, "nGenes")
@@ -594,7 +612,8 @@ escoSimPathDE <- function(sim, verbose) {
   withcorr <- getParam(params, "withcorr")
   
   paths.design <- getParam(params, "paths.design")
-
+  
+  # generate the identity of DE genes
   if(withcorr & (length(corr)>0)){
     deall.genes = sample(nGenes, nrow(corr[[1]]))}
   else{
@@ -609,13 +628,14 @@ escoSimPathDE <- function(sim, verbose) {
   paths.factors <- vector("list", nrow(paths.design))
   paths.diffusion <- vector("list", nrow(paths.design))
   
-  paths.graph <- igraph::graph_from_data_frame(paths.design)
-  paths.order <- names(igraph::topo_sort(paths.graph, mode = "in"))
+  paths.graph <- graph_from_data_frame(paths.design)
+  paths.order <- names(topo_sort(paths.graph, mode = "in"))
   paths.order <- as.numeric(paths.order)
   
   # Remove the origin because it is not a path
   paths.order <- paths.order[paths.order != 0]
   
+  # generate the de factors through a random walk model
   for (path in paths.order) {
     if (verbose) {message("Simulating path ", path, "...")}
     nSteps <- paths.design$Steps[path]
@@ -661,19 +681,17 @@ escoSimPathDE <- function(sim, verbose) {
 
 
 
-#' Simulate cell means
+#' Simulate cell means 
 #'
 #' Simulate a gene by cell matrix giving the mean expression for each gene in
-#' each cell. Cells start with the mean expression for the group they belong to
-#' (when simulating groups) or cells are assigned the mean expression from a
-#' random position on the appropriate path (when simulating tree). The selected
-#' means are adjusted for each cell's expected library size.
+#' each cell where cells are of one single homonogenrous group. 
+#' Cells start with the base gene mean and then adjusted for each cell's expected library size.
 #'
 #' @param sim SingleCellExperiment to add cell means to.
-#'
+#' @param verbose whether to print the process or not.
 #' @return SingleCellExperiment with added cell means.
 #'
-#' @rdname escoSimCellMeans
+#' @rdname escoSimSingleCellMeans
 #' @importFrom SummarizedExperiment rowData colData assays assays<- 
 #' @importFrom S4Vectors metadata metadata<-
 escoSimSingleCellMeans <- function(sim, verbose) {
@@ -698,9 +716,23 @@ escoSimSingleCellMeans <- function(sim, verbose) {
     return(sim)
 }
 
+#' Simulate group cell means
+#'
+#' Simulate a gene by cell matrix giving the mean expression for each gene in
+#' each cell where cells are of discrete group structure. 
+#' For a cell we start with the base gene mean and then combined with the DE factor 
+#' for the group/branch they belong to
+#' (when simulating group/tree) if the gene is DE gene, finally the
+#' means are adjusted for each cell's expected library size.
+#'
+#' @param sim SingleCellExperiment to add cell means to.
+#' @param verbose whether to print the process or not.
+#' @return SingleCellExperiment with added cell means.
+#'
+#' @rdname escoSimGroupCellMeans
 #' @importFrom SummarizedExperiment rowData colData assays assays<- 
 #' @importFrom S4Vectors metadata metadata<-
-#' @rdname escoSimCellMeans
+
 escoSimGroupCellMeans <- function(sim, verbose) {
     params <- metadata(sim)$Params
     nGenes <- getParam(params, "nGenes")
@@ -714,18 +746,15 @@ escoSimGroupCellMeans <- function(sim, verbose) {
     lib.loc <- getParam(params, "lib.loc")
     exp.lib.sizes <- colData(sim)$ExpLibSize
     batch.means.cell <- assays(sim)$Means
-    
 
     group.facs.gene <- rowData(sim)[, paste0("DEFac", group.names)]
     DEgene.name = gene.names[which(rowData(sim)$DEgenes==1)]
     cell.facs.gene <- as.matrix(group.facs.gene[, paste0("DEFac", groups)])
     cell.means.gene <- batch.means.cell*cell.facs.gene
-  
     cell.props.gene <- t(t(cell.means.gene)/colSums(cell.means.gene))
     
     base.means.cell <- t(t(cell.props.gene)*exp.lib.sizes)
     
-
     colnames(base.means.cell) <- cell.names
     rownames(base.means.cell) <- gene.names
     assays(sim)$BaseCellMeans <- base.means.cell
@@ -734,7 +763,19 @@ escoSimGroupCellMeans <- function(sim, verbose) {
     return(sim)
 }
 
-#' @rdname escoSimCellMeans
+#' Simulate tree cell means 
+#'
+#' Simulate a gene by cell matrix giving the mean expression for each gene in
+#' each cell where the cells are of tree structure. For a cell we start with the base gene mean, 
+#' and then combined with the DE factor if the gene is DE gene. 
+#' Additional factors are applied if the DE gene are also marker genes. The selected
+#' means are then adjusted for each cell's expected library size.
+#' @param sim SingleCellExperiment containing simulation.
+#' @param verbose logical. Whether to print progress messages
+#' @importFrom S4Vectors metadata metadata<-
+#' @return sim SingleCellExperiment with cell means
+#' 
+#' @rdname escoSimTreeCellMeans
 #' @importFrom SummarizedExperiment rowData colData assays assays<- 
 #' @importFrom S4Vectors metadata metadata<-
 #' @importFrom SC3 get_marker_genes
@@ -782,15 +823,13 @@ escoSimTreeCellMeans <- function(sim, verbose) {
   return(sim)
 }
 
-
-
 #' Simulate esco trajetory cell means
 #'
 #' @param sim SingleCellExperiment containing simulation.
-#' @param params escoParams object with simulation parameters.
-#' @param verbose logical. Whether to print progress messages
+#' @param verbose logical. Whether to print progress messages.
 #' @importFrom S4Vectors metadata metadata<-
-#'
+#' @return sim SingleCellExperiment with cell means
+#' 
 #' @details
 #' Cells are first assigned to a path and a step along that path. This is
 #' controlled by the \code{cells.design} parameter which is a \code{data.frame}
@@ -805,9 +844,8 @@ escoSimTreeCellMeans <- function(sim, verbose) {
 #' from the \code{paths.means} parameter and adjusted based on each cell's
 #' library size. An adjustment for BCV is then applied. 
 #'
-#' @return SingleCellExperiment with cell means
-#' @rdname escoSimCellMeans
-escoSimPathCellMeans <- function(sim, verbose) {
+#' @rdname escoSimTrajMeans
+escoSimTrajCellMeans <- function(sim, verbose) {
   params = metadata(sim)$Params
   
   cell.names <- colData(sim)$Cell
@@ -873,16 +911,20 @@ escoSimPathCellMeans <- function(sim, verbose) {
 }
 
 
-
 #' Simulate true counts
 #'
 #' Simulate a true counts matrix. Counts are simulated from a poisson
-#' distribution where Each gene in each cell has it's own mean based on the
-#' group (or path position), expected library size and BCV.
+#' distribution where each gene in each cell has it's own mean based on the
+#' group (or path position), expected library size and BCV. Additional gene-gene 
+#' interaction can be introduced via a copula model with correlation matrix input 
+#' by design or randomly generated from a real purifed gene expression data set from NeuroExpresso
+#' \url{https://www.eurekalert.org/pub_releases/2017-11/sfn-nwa111417.php}.
 #'
 #' @param sim SingleCellExperiment to add true counts to.
-#'
-#' @return SingleCellExperiment with simulated true counts.
+#' @param type The type of cell structure: 'single', 'group', 'tree', or 'traj'.
+#' @param verbose whether to print the process or not
+#' @param numCores the number of cores for parallelization during simulation, if set as NULL, then all the cores are used.
+#' @return sim SingleCellExperiment with simulated true counts.
 #'
 #' @importFrom SummarizedExperiment rowData colData assays assays<- 
 #' @importFrom S4Vectors metadata metadata<-
@@ -892,7 +934,7 @@ escoSimPathCellMeans <- function(sim, verbose) {
 #' @import foreach
 #' @import doSNOW
 #' @import progress
-#' @rdname escoSimTruth
+#' @rdname escoSimTrueCounts
 escoSimTrueCounts <- function(sim, type, verbose, numCores = 2) {
     params<-metadata(sim)$Params
     withcorr <- getParam(params, "withcorr")
@@ -1087,22 +1129,24 @@ escoSimTrueCounts <- function(sim, type, verbose, numCores = 2) {
     return(sim)
 }
 
-#' Simulate dropout
+#' Simulate noisy observed count matirx via adding more zeros through a zero inflation model
 #'
 #' A logistic function is used to form a relationshop between the expression
 #' level of a gene and the probability of dropout, giving a probability for each
 #' gene in each cell. These probabilities are used in a Bernoulli distribution
 #' to decide which counts should be dropped.
-#' @rdname escoSimNoise
+#' @rdname escoSimZeroInflate
 #' @param sim SingleCellExperiment to add dropout to.
+#' @param trial the index of trial of simulation, all trials share the same truth but the 
+#'        noise is added independently for each trial
+#' @param verbose whether to print the process or not
 #'
 #' @return SingleCellExperiment with simulated dropout and observed counts.
 #'
 #' @importFrom SummarizedExperiment rowData colData assays assays<-
 #' @importFrom S4Vectors metadata metadata<-
 #' @importFrom stats rbinom
-#' @export
-escoSimDropout <- function(sim, trial, verbose) {
+escoSimZeroInflate <- function(sim, trial, verbose) {
     params <- metadata(sim)$Params
     dirname <- getParam(params, "dirname")
     true.counts <- assays(sim)$TrueCounts
@@ -1148,10 +1192,6 @@ escoSimDropout <- function(sim, trial, verbose) {
       if(!dropout.cort)keep.prob <- 1 - drop.prob 
       else{
           keep.prob  <- (1 - drop.prob)/(1-dpois(0, lambda = cell.normmeans))
-          # bcv <- (bcv.common + (1 / sqrt(cell.means)))*sqrt(bcv.df/rchisq(nGenes, df = bcv.df))
-          # dimnames(bcv) =  dimnames(cell.means)
-          # bcv = as.matrix(bcv)
-          # keep.prob <- (1-drop.prob)/(1-dnbinom(0, size = 1/(bcv^2), mu = cell.means))
         }
         
       keep.prob[keep.prob>1] <- 1
@@ -1183,62 +1223,22 @@ escoSimDropout <- function(sim, trial, verbose) {
     return(sim)
 }
 
-#' Get log-normal factors
-#'
-#' Randomly generate multiplication factors from a log-normal distribution.
-#'
-#' @param n.facs Number of factors to generate.
-#' @param sel.prob Probability that a factor will be selected to be different
-#'        from 1.
-#' @param neg.prob Probability that a selected factor is less than one.
-#' @param fac.loc Location parameter for the log-normal distribution.
-#' @param fac.scale Scale factor for the log-normal distribution.
-#'
-#' @return Vector containing generated factors.
-#' @importFrom stats rbinom rlnorm
-getLNormFactors <- function(n.facs, is.selected, neg.prob=0, fac.loc, fac.scale) {
-
-    n.selected <- sum(is.selected)
-    if(length(fac.loc)>1){
-      fac.loc = fac.loc[is.selected]
-    }
-    dir.selected <- (-1)^rbinom(n.selected, 1, neg.prob)
-    if(length(fac.loc)>1){
-      facs.selected <- sapply(1:n.selected, function(i)rlnorm(1, fac.loc[i], fac.scale))
-    }
-    else facs.selected <- rlnorm(n.selected, fac.loc, fac.scale)
-    
-    # Reverse directions for factors that are less than one
-    dir.selected[facs.selected < 1] <- -1 * dir.selected[facs.selected < 1]
-    factors <- rep(1, n.facs)
-    factors[is.selected] <- facs.selected ^ dir.selected
-
-    return(factors)
-}
-
-
-#' Simulate observed count matrix given technical biases and the true counts using methods in SymSim
-#' @reference
-#' Zhang X, Xu C, Yosef N. Simulating multiple faceted variability in single cell RNA sequencing. 
-#' Nature communications. 2019 Jun 13;10(1):1-6. \url{https://www.nature.com/articles/s41467-019-10500-w}
+#' Simulate observed count matrix though downsampling.
+#' (This function is borrowed from SymSim).
 #' 
-#' @param true_counts gene cell matrix
-#' @param meta_cell the meta information related to cells, will be combined with technical cell level information and returned 
-#' @param protocol a string, can be "nonUMI" or "UMI"
-#' @param alpha_mean the mean of rate of subsampling of transcripts during capture step, default at 10 percent efficiency
-#' @param alpha_sd the std of rate of subsampling of transcripts
-#' @param lenslope amount of length bias
-#' @param nbins number of bins for gene length
-#' @param amp_bias_limit range of amplification bias for each gene, a vector of length ngenes
-#' @param rate_2PCR PCR efficiency, usually very high, default is 0.8
-#' @param nPCR1 the number of PCR cycles, default is 16
-#' @param LinearAmp if linear amplification is used for pre-amplification step, default is FALSE
-#' @param LinearAmp_coef the coeficient of linear amplification, that is, how many times each molecule is amplified by
-#' @param depth_mean mean of sequencing depth
-#' @param depth_sd std of sequencing depth
-#' @param hge2true if we add high gene expression to true counts
-#' @param SE input, should be a summerized experiment rather than a list of elements, default is False
-#' @param nbatch number of batches
+#' @references
+#' Zhang X, Xu C, Yosef N. Simulating multiple faceted variability in single cell RNA sequencing. 
+#' Nature communications. 2019 Jun 13;10(1):1-6. 
+#' \url{https://www.nature.com/articles/s41467-019-10500-w}
+#' 
+#' @param numCores the number of cores used for parallelization, default is 2.
+#'        If set as NULL, then all the detected cores are used.
+#' @param sim SingleCellExperiment to add dropout to.
+#' @param trial the index of trial of simulation, all trials share the same truth but the 
+#'        noise is added independently for each trial
+#' @param verbose whether to print the process or not
+#' @param protocal a string, can be "nonUMI" or "UMI", default is "UMI"
+#' @param nbatch number of batches, default is 1.
 #' @import SummarizedExperiment
 #' @importFrom S4Vectors metadata metadata<-
 #' @importFrom utils data
@@ -1246,9 +1246,8 @@ getLNormFactors <- function(n.facs, is.selected, neg.prob=0, fac.loc, fac.scale)
 #' @import foreach
 #' @import doSNOW
 #' @import progress
-#' @rdname escoSimNoise
-#' @export
-Observed_Counts <- function(sim, trial, verbose, numCores =2, protocol = "UMI", nbatch=1){
+#' @rdname escoSimDownSample
+escoSimDownSample <- function(sim, trial, verbose, numCores =2, protocol = "UMI", nbatch=1){
   params <-metadata(sim)$Params
   dirname <- getParam(params, "dirname")
   true_counts = assays(sim)$TrueCounts
@@ -1288,7 +1287,7 @@ Observed_Counts <- function(sim, trial, verbose, numCores =2, protocol = "UMI", 
   for(alpha_mean in alpha_mean_vec){
     for(depth_mean in depth_mean_vec){
       rate_2cap_vec <- rnorm_truc(n=ncells, mean = alpha_mean, sd=alpha_sd, a=rate_2cap_lb, b=Inf)
-      depth_vec <- rnorm_truc(n=ncells, mean = depth_mean, sd=depth_sd,a=depth_lb, b=Inf)
+      depth_vec <- rnorm_truc(n=ncells, mean = depth_mean, sd=depth_sd, a=depth_lb, b=Inf)
       if(is.null(numCores))numCores=detectCores() -1
       cl <- makeCluster(numCores)
       registerDoSNOW(cl)
@@ -1319,24 +1318,6 @@ Observed_Counts <- function(sim, trial, verbose, numCores =2, protocol = "UMI", 
       } 
       else observed_counts <- do.call(cbind,observed_counts)
       
-      # if (nbatch>1){
-      #   mean_matrix <- matrix(0, ngenes, nbatch)
-      #   batch_effect_size <- 2
-      #   gene_mean <- rnorm(ngenes, 0, 1)
-      #   temp <- lapply(1:ngenes, function(igene) {
-      #     return(runif(nbatch, min = gene_mean[igene]-batch_effect_size, max = gene_mean[igene]+batch_effect_size))
-      #   })
-      #   mean_matrix <- do.call(rbind, temp)
-      #   
-      #   batch_factor <- matrix(0, ngenes, ncells)
-      #   for (igene in 1:ngenes){
-      #     for (icell in 1:ncells){
-      #       batch_factor[igene, icell] <- rnorm(n=1, mean=mean_matrix[igene, batchIDs[icell]], sd=0.01)
-      #     }
-      #   }
-      #   observed_counts <- 2^(log2(observed_counts)+batch_factor)
-      # }
-      
       rownames(observed_counts) = rownames(true_counts)
       colnames(observed_counts) = colnames(true_counts)
       
@@ -1351,12 +1332,16 @@ Observed_Counts <- function(sim, trial, verbose, numCores =2, protocol = "UMI", 
   }
 
 
-#' Simulate technical biases using methods in SymSim
+#' Simulate technical biases.
+#' (This function is borrowed from SymSim).
+#' @references
+#' Zhang X, Xu C, Yosef N. Simulating multiple faceted variability in single cell RNA sequencing. 
+#' Nature communications. 2019 Jun 13;10(1):1-6. \url{https://www.nature.com/articles/s41467-019-10500-w}
+#' 
 #' @param lenslope amount of length bias. This value sould be less than 2*amp_bias_limit[2]/(nbins-1)
 #' @param nbins number of bins for gene length
 #' @param gene_len transcript length of each gene
 #' @param amp_bias_limit range of amplification bias for each gene, a vector of length ngenes
-#' @export
 cal_amp_bias <- function(lenslope, nbins, gene_len, amp_bias_limit){
   
   ngenes <- length(gene_len)
@@ -1388,7 +1373,13 @@ cal_amp_bias <- function(lenslope, nbins, gene_len, amp_bias_limit){
 }
 
 
-#' This function simulates the amplification, library prep, and the sequencing processes using methods in SymSim.
+#' Simulate amplification, library prep, and the sequencing processes.
+#' (This function is borrowed from SymSim).
+#' 
+#' @references
+#' Zhang X, Xu C, Yosef N. Simulating multiple faceted variability in single cell RNA sequencing. 
+#' Nature communications. 2019 Jun 13;10(1):1-6. \url{https://www.nature.com/articles/s41467-019-10500-w}
+#' 
 #' @param true_counts_1cell the true transcript counts for one cell (one vector)
 #' @param protocol a string, can be "nonUMI" or "UMI"
 #' @param rate_2cap the capture efficiency for this cell
@@ -1396,12 +1387,12 @@ cal_amp_bias <- function(lenslope, nbins, gene_len, amp_bias_limit){
 #' @param amp_bias amplification bias for each gene, a vector of length ngenes
 #' @param rate_2PCR PCR efficiency, usually very high
 #' @param nPCR1 the number of PCR cycles
+#' @param nPCR2 the number of second PCR cycles
 #' @param LinearAmp if linear amplification is used for pre-amplification step, default is FALSE
 #' @param LinearAmp_coef the coeficient of linear amplification, that is, how many times each molecule is amplified by
 #' @param N_molecules_SEQ number of molecules sent for sequencing; sequencing depth
 #' @importFrom utils data
 #' @return read counts (if protocol="nonUMI") or UMI counts (if protocol="UMI)
-#' @export
 amplify_cell<- function(true_counts_1cell, protocol, rate_2cap, gene_len, amp_bias, 
                           rate_2PCR, nPCR1, nPCR2, LinearAmp, LinearAmp_coef, N_molecules_SEQ){
   
@@ -1523,206 +1514,4 @@ amplify_cell<- function(true_counts_1cell, protocol, rate_2cap, gene_len, amp_bi
     
     return(list(UMI_counts, sequenced_vec, sum(frag_vec>0)))
   }
-}
-
-#' sample from truncated normal distribution (this function is borrowed from splatter)
-#' @param a the minimum value allowed 
-#' @param b the maximum value allowed
-#' @export
-rnorm_truc <- function(n, mean, sd, a, b){
-  vec1 <- rnorm(n, mean = mean, sd=sd)
-  beyond_idx <- which(vec1 < a | vec1 > b)
-  if (length(beyond_idx) > 0) { # for each value < rate_2cap_lb
-    substi_vec <- sapply(1:length(beyond_idx), function(i){
-      while (TRUE){
-        temp <- rnorm(1, mean = mean, sd=sd)
-        if (temp > a | temp > b) {break}}
-      return(temp)} )
-    vec1[beyond_idx] <- substi_vec
-  }
-  return(vec1)
-}
-
-
-
-#' Get Beta step probabilities
-#'
-#' Use a Beta distribution for set probabilities along a path (this function is borrowed from splatter)
-#'
-#' @param steps Number of steps
-#' @param alpha Alpha parameter
-#' @param beta Beta parameter
-#' @importFrom S4Vectors metadata metadata<-
-#'
-#' @details
-#' The density is sampled from a Beta distribution between 0 and 1. Infinite
-#' densities at edges are adjusted and then the values are scaled to give
-#' probabilities.
-#'
-#' @return Vector of probabilities
-#'
-#' @importFrom stats dbeta
-#' @export
-getBetaStepProbs <- function(steps, alpha, beta) {
-  dens <- dbeta(seq(0, 1, length.out = steps), alpha, beta)
-  
-  # Adjust for infinite values at edge of distribution
-  dens.inf <- !is.finite(dens)
-  if (any(dens.inf) && all(dens[!dens.inf] == 0)) {
-    dens[dens.inf] <- 1
-  }
-  if (!is.finite(dens[1])) {
-    dens[1] <- 1.1 * dens[2]
-  }
-  if (!is.finite(dens[steps])) {
-    dens[steps] <- 1.1 * dens[steps - 1]
-  }
-  
-  probs <- dens / sum(dens)
-  
-  return(probs)
-}
-
-#' Sample density
-#'
-#' Sample from a density object using rejection sampling (this function is borrowed from splatter)
-#'
-#' @param n Number of values to sample
-#' @param dens Density object to sample from
-#' @param lower Lower x-axis bound on sampled values
-#' @importFrom S4Vectors metadata metadata<-
-#'
-#' @details
-#' Random points (x and y) are generated inside the range of the density object.
-#' If they value is less than the density for that x value (and x is greater
-#' than \code{lower}) then that x value is retained. Ten thousand points are
-#' generated at a time until enough valid values have been sampled.
-#'
-#' @return Vector of sampled values
-#'
-#' @importFrom stats approxfun
-#' @export
-sampleDensity <- function(n, dens, lower = 0) {
-  
-  xmin <- min(dens$x)
-  xmax <- max(dens$x)
-  ymin <- min(dens$y)
-  ymax <- max(dens$y)
-  
-  boundary <- approxfun(dens$x, dens$y)
-  
-  values <- c()
-  nsel <- 0
-  
-  while(nsel < n) {
-    x <- runif(1e4, xmin, xmax)
-    y <- runif(1e4, ymin, ymax)
-    sel <- y < boundary(x) & x > lower
-    
-    nsel <- nsel + sum(sel)
-    values <- c(values, x[sel])
-  }
-  
-  values <- values[seq_len(n)]
-  
-  return(values)
-}
-
-
-#' @export
-randcop <-function(Rho, nCells){
-  Col = chol(Rho)
-  nGenes = nrow(Rho)
-  copular = matrix(rnorm(nGenes*nCells), ncol = nCells)
-  copular = t(Col) %*% copular
-  copular = pnorm(copular)
-  return(copular)
-}
-
-#' @export
-makespd<-function(rho){
-  er = eigen(rho)
-  if(min(er$values)<0){
-    oldsum = sum(er$values)
-    er$values = er$values - min(er$values) + 1e-6
-    newsum = sum(er$values)
-    er$values = er$values/newsum*oldsum 
-    rhocop = er$vectors %*% diag(er$values) %*% t(er$vectors)
-    rhocop = rhocop%*%diag(1/diag(rhocop))
-    return(rhocop)
-  }
-  else{
-    return(rho)
-  }
-}
-
-
-#' @importFrom utils data
-#' @importFrom stats as.dist hclust cor
-#' @export
-randcor <- function(ngenes){
-  data(puri_data)
-  corr = cor(t(puri_data[sample(nrow(puri_data),ngenes),]))
-  d <- stats::as.dist((1 - corr)/2)
-  h <- stats::hclust(d)
-  order <- h$order
-  ans <- corr[order, order]
-  ans = makespd(ans)
-  return(ans)
-}
-
-#' Logistic function
-#'
-#' Implementation of the logistic function (this function is borrowed from splatter)
-#'
-#' @param x value to apply the function to.
-#' @param x0 midpoint parameter. Gives the centre of the function.
-#' @param k shape parameter. Gives the slope of the function.
-#'
-#' @return Value of logistic funciton with given parameters
-logistic <- function(x, x0, k) {
-  1 / (1 + exp(-k * (x - x0)))
-}
-
-#' Bind rows (matched)
-#'
-#' Bind the rows of two data frames, keeping only the columns that are common
-#' to both (this function is borrowed from splatter).
-#'
-#' @param df1 first data.frame to bind.
-#' @param df2 second data.frame to bind.
-#'
-#' @return data.frame containing rows from \code{df1} and \code{df2} but only
-#'         common columns.
-rbindMatched <- function(df1, df2) {
-  common.names <- intersect(colnames(df1), colnames(df2))
-  if (length(common.names) < 2) {
-    stop("There must be at least two columns in common")
-  }
-  combined <- rbind(df1[, common.names], df2[, common.names])
-  
-  return(combined)
-}
-
-#' Winsorize vector
-#'
-#' Set outliers in a numeric vector to a specified percentile (this function is borrowed from splatter).
-#'
-#' @param x Numeric vector to winsorize
-#' @param q Percentile to set from each end
-#'
-#' @return Winsorized numeric vector
-winsorize <- function(x, q) {
-  
-  checkmate::check_numeric(x, any.missing = FALSE)
-  checkmate::check_number(q, lower = 0, upper = 1)
-  
-  lohi <- stats::quantile(x, c(q, 1 - q), na.rm = TRUE)
-  
-  if (diff(lohi) < 0) { lohi <- rev(lohi) }
-  
-  x[!is.na(x) & x < lohi[1]] <- lohi[1]
-  x[!is.na(x) & x > lohi[2]] <- lohi[2]
-  
-  return(x)
 }

@@ -2,14 +2,23 @@
 % Please edit documentation in R/esco-estimate.R
 \name{escoEstDE}
 \alias{escoEstDE}
-\title{Estimate esco expression DE parameters}
+\title{Estimate esco expression DE parameters for discrete cell groups}
 \usage{
 escoEstDE(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params)
 }
 \arguments{
-\item{params}{escoParams object to store estimated values in.}
+\item{nonDE.normcounts}{library size normalised counts matrix for nonDE genes.}
 
-\item{norm.counts}{library size normalised counts matrix.}
+\item{DE.normcounts}{library size normalised counts matrix for DE genes.}
+
+\item{degenes}{a dataframe of two columns: "genes" and "clust", 
+where "genes" contains the position of a degenes, and "clust" contains the 
+corresponding cell group the degenes marks.}
+
+\item{cellinfo}{a vector of length n, where n is the number of cells. 
+Each entries is the group identity of a cell.}
+
+\item{params}{escoParams object to store estimated values in.}
 }
 \value{
 escoParams object with estimated values.
@@ -19,7 +28,7 @@ Parameters are estimated by comparing means of individual genes to the
 median mean expression level.
 }
 \details{
-Expression outlier genes are detected using the Median Absolute Deviation
+Expression DE factor are detected using the Median Absolute Deviation
 (MAD) from median method. If the log2 mean expression of a gene is greater
 than two MADs above the median log2 mean expression it is designated as an
 outlier. The proportion of outlier genes is used to estimate the outlier

@@ -18,19 +18,18 @@
 #' @rdname Params
 #' @aliases Params-class
 setClass("Params",
-         contains = "VIRTUAL",
-         slots = c(nGenes = "numeric",
+        contains = "VIRTUAL",
+        slots = c(nGenes = "numeric",
                    nCells = "numeric",
                    seed = "numeric"),
-         prototype = prototype(nGenes = 10000, nCells = 100,
-                               seed = sample(1:1e6, 1)))
+        prototype = prototype(nGenes = 10000, nCells = 100,
+                              seed = sample(1:1e6, 1)))
 
 #' The escoParams class
 #'
 #' S4 class that holds parameters for the ESCO simulation.
 #'
-#' @section Parameters:
-#'
+#' @section Parameters: 
 #' The ESCO simulation requires the following parameters:
 #'
 #' \describe{
@@ -113,40 +112,50 @@ setClass("Params",
 #'     \item{\emph{Dropout parameters}}{
 #'         \describe{
 #'             \item{\code{[dropout.type]}}{The type of dropout to simulate.
-#'             "none" indicates no dropout, "zeroinflate" uses zero inflation model to add dropouts,
-#'              "downsampling" uses similar procedure in SymSim to mimic the experimental steps 
+#'             "none" indicates no dropout, "zeroinflate" uses zero 
+#'             inflation model to add dropouts,
+#'              "downsampling" uses similar procedure in 
+#'              SymSim to mimic the experimental steps 
 #'              for adding dropouts.}
 #'             \item{\code{dropout.mid}}{Midpoint parameter for the dropout
 #'             logistic function.}
 #'             \item{\code{dropout.shape}}{Shape parameter for the dropout
 #'             logistic function.}
-#'             \item{\code{[alpha_mean]}}{Mean parameter for the dwonsampling
+#'             \item{\code{[alpha_mean]}}{Mean parameter 
+#'             for the dwonsampling
 #'              gamma function.}
-#'             \item{\code{[alpha_sd]}}{Standard variance parameter for the downsampling
-#'             gamma function.}
+#'             \item{\code{[alpha_sd]}}{Standard variance parameter 
+#'             for the downsampling gamma function.}
 #'             \item{\code{[lenslope]}}{Shape parameter for the dropout
 #'             logistic function.}
 #'              \item{\code{[nbins]}}{Shape parameter for the dropout
 #'             logistic function.}
 #'             \item{\code{[amp_bias_limt]}}{Shape parameter for the dropout
 #'             logistic function.}
-#'             \item{\code{[rate_2PCR]}}{}
-#'             \item{\code{[LinearAmp]}}{}
-#'             \item{\code{[LinearAmp_coef]}}{}
-#'             \item{\code{[depth_mean]}}{}
-#'             \item{\code{[depth_sd]}}{}
+#'             \item{\code{[rate_2PCR]}}{PCR efficiency, usually very high}
+#'             \item{\code{[LinearAmp]}}{if linear amplification is 
+#'             used for pre-amplification step, default is FALSE}
+#'             \item{\code{[LinearAmp_coef]}}{the coeficient of
+#'              linear amplification, 
+#'             that is, how many times each molecule is amplified by}
+#'             \item{\code{[depth_mean]}}{Mean parameter of the 
+#'             sequencing depths.}
+#'             \item{\code{[depth_sd]}}{Standard variance parameter of 
+#'             sequencing depths.}
 #'         }
 #'     }
+#'  }
 #'
-#' The parameters not shown in brackets can be estimated from real data using
-#' \code{\link{escoEstimate}}. For details of the Splatter simulation
+#' The parameters not shown in brackets can be 
+#' estimated from real data using
+#' \code{\link{escoEstimate}}. For details of 
+#' the Splatter simulation
 #' see \code{\link{escoSimulate}}.
 #'
 #' @name escoParams
 #' @rdname escoParams
 #' @aliases escoParams-class
 #' @exportClass escoParams
-#' @import ape
 setClass("escoParams",
          contains = "Params",
          slots = c(mean.shape = "numeric",
@@ -274,15 +283,16 @@ setClass("escoParams",
 
 #' Get parameters
 #'
-#' Get multiple parameter values from a Params object (this function is borrowed from splatter).
+#' Get multiple parameter values from a Params object 
+#' (this function is borrowed from \code{\link[splatter]{splatter}}).
 #'
 #' @param params Params object to get values from.
 #' @param names vector of names of the parameters to get.
 #'
 #' @return List with the values of the selected parameters.
 #' @examples
-#' params <- newSimpleParams()
-#' getParams(params, c("nGenes", "nCells", "mean.rate"))
+#' params <- newescoParams()
+#' getParams(params, c("nGenes", "nCells"))
 getParams <- function(params, names) {
   
   checkmate::assertClass(params, classes = "Params")
@@ -293,9 +303,11 @@ getParams <- function(params, names) {
   
   return(params.list)
 }
+
 #' Set parameters UNCHECKED
 #'
-#' Set multiple parameters in a Params object (this function is borrowed from splatter).
+#' Set multiple parameters in a Params object 
+#' (this function is borrowed from \code{\link[splatter]{splatter}}).
 #'
 #' @param params Params object to set parameters in.
 #' @param update list of parameters to set where \code{names(update)} are the

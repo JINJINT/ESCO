@@ -2,7 +2,7 @@
 % Please edit documentation in R/esco-estimate.R
 \name{escoEstOutlier}
 \alias{escoEstOutlier}
-\title{Estimate esco expression outlier parameters}
+\title{Estimate esco expression outlier parameters for a single cell group}
 \usage{
 escoEstOutlier(norm.counts, params)
 }

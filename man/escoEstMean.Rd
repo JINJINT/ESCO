@@ -7,9 +7,11 @@
 escoEstMean(normcounts, counts, params)
 }
 \arguments{
-\item{params}{escoParams object to store estimated values in.}
+\item{normcounts}{library size normalised counts matrix.}
 
-\item{norm.counts}{library size normalised counts matrix.}
+\item{counts}{counts matrix to estimate parameters from.}
+
+\item{params}{escoParams object to store estimated values in.}
 }
 \value{
 escoParams object with estimated values.

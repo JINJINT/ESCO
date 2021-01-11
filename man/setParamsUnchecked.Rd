@@ -19,7 +19,8 @@ parameters specified in \code{update}.}
 Params object with updated values.
 }
 \description{
-Set multiple parameters in a Params object (this function is borrowed from splatter).
+Set multiple parameters in a Params object 
+(this function is borrowed from \code{\link[splatter]{splatter}}).
 }
 \details{
 Each parameter is set by a call to \code{\link{setParam}}. If the same

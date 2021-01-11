@@ -20,6 +20,8 @@ escoSimulateTree(params = newescoParams(), verbose = TRUE, ...)
 escoSimulateTraj(params = newescoParams(), verbose = TRUE, ...)
 }
 \arguments{
+\item{params}{escoParams object to store simulation configurations in.}
+
 \item{type}{which type of heterogenounity to use. Options are :
 "single" which produces a single population;
 "group" which produces distinct groups;
@@ -27,6 +29,9 @@ escoSimulateTraj(params = newescoParams(), verbose = TRUE, ...)
 "traj"  which produces distinct groups but admits a smooth trajectory structure.}
 
 \item{verbose}{logical. Whether to print progress messages.}
+
+\item{numCores}{the number of cores used for parallelization, default is 2.
+If set as NULL, then all the detected cores are used.}
 
 \item{...}{any additional parameter settings to override what is provided in
 \code{\link{params}}.}
@@ -36,12 +41,12 @@ SingleCellExperiment object containing the simulated counts and
 intermediate values.
 }
 \description{
-Simulate count data from a fictional single-cell RNA-seq experiment using
-the hierarchical copula model.
+Simulate count data for a fictional single-cell RNA-seq experiment using
+a hierarchical copula model.
 }
 \details{
 Parameters can be set in a variety of ways. If no parameters are provided
-the default parameters are used. We adopts the way in splatter to set up parameters, particularly, 
+the default parameters are used. We adopts the way in \code{\link[splatter]{splatter}} to set up parameters, particularly, 
 any parameters in \code{\link{params}} can be
 overridden by supplying additional arguments through a call to
 \code{\link{setParams}}. This design allows the user flexibility in
@@ -53,10 +58,10 @@ The simulation involves the following steps:
 \enumerate{
     \item Set up simulation object
     \item Simulate library sizes
-    \item Simulate base gene means
-    \item Simulate groups / tree / path structure differential factors
-    \item Simulate mean variance relationship adjusted cell means
-    \item Simulate true counts with / without correlation
+    \item Simulate base mean for genes
+    \item Simulate cell structure (group / tree / trajectory) related differential factors
+    \item Simulate mean variance relationship adjusted mean for genes in different cells
+    \item Simulate true counts (with / without correlation)
     \item Simulate techinical noise (zeroinflation / downsampling)
     \item Create final dataset
 }
@@ -73,21 +78,21 @@ or \code{\link{metadata}} (for parameters configurations) slots.
 \examples{
 # Simulation with default parameters
 sim <- escoSimulate()
-\dontrun{
+
 # Simulation with different number of genes
-sim <- escoSimulate(nGenes = 1000)
+# sim <- escoSimulate(nGenes = 1000)
 # Simulation with custom parameters
 params <- newescoParams(nGenes = 100, mean.rate = 0.5)
-sim <- escoSimulate(params)
+# sim <- escoSimulate(params)
 # Simulation with adjusted custom parameters
-sim <- escoSimulate(params, mean.rate = 0.6, out.prob = 0.2)
+# sim <- escoSimulate(params, mean.rate = 0.6, out.prob = 0.2)
 # Simulate group
-sim <- escoSimulate(type = "group")
+# sim <- escoSimulate(type = "group")
 # Simulate tree
-sim <- escoSimulate(type = "tree")
+# sim <- escoSimulate(type = "tree")
 # Simulate traj
-sim <- escoSimulate(type = "traj")
-}
+# sim <- escoSimulate(type = "traj")
+
 }
 \references{
 Tian J, Wang J, Roeder K. ESCO: single cell expression simulation incorporating gene co-expression. 
@@ -95,14 +100,19 @@ bioRxiv. 2020.
 
 Paper: \url{https://www.biorxiv.org/content/10.1101/2020.10.20.347211v1}
 
-Code: \url{https://github.com/JINJINT/}
+Code: \url{https://github.com/JINJINT/ESCO}
 }
 \seealso{
-\code{\link{escoSimLibSizes}}, 
+\code{\link{escoSimLib}}, 
 \code{\link{escoSimGeneMeans}},
-\code{\link{escoSimMeans}},
-\code{\link{escoSimDE}}, 
-\code{\link{escoSimCellMeans}}, 
+\code{\link{escoSimGroupDE}}, 
+\code{\link{escoSimTreeDE}}, 
+\code{\link{escoSimTrajDE}}, 
+\code{\link{escoSimSingleCellMeans}}, 
+\code{\link{escoSimGroupCellMeans}}, 
+\code{\link{escoSimTreeCellMeans}}, 
+\code{\link{escoSimTrajCellMeans}}, 
 \code{\link{escoSimTrueCounts}},
-\code{\link{escoSimDropout}}
+\code{\link{escoSimZeroInflate}},
+\code{\link{escoSimDownSample}}
 }

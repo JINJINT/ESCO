@@ -2,7 +2,8 @@
 % Please edit documentation in R/esco-simulate.R
 \name{cal_amp_bias}
 \alias{cal_amp_bias}
-\title{Simulate technical biases using methods in SymSim}
+\title{Simulate technical biases.
+(This function is borrowed from SymSim).}
 \usage{
 cal_amp_bias(lenslope, nbins, gene_len, amp_bias_limit)
 }
@@ -16,5 +17,10 @@ cal_amp_bias(lenslope, nbins, gene_len, amp_bias_limit)
 \item{amp_bias_limit}{range of amplification bias for each gene, a vector of length ngenes}
 }
 \description{
-Simulate technical biases using methods in SymSim
+Simulate technical biases.
+(This function is borrowed from SymSim).
+}
+\references{
+Zhang X, Xu C, Yosef N. Simulating multiple faceted variability in single cell RNA sequencing. 
+Nature communications. 2019 Jun 13;10(1):1-6. \url{https://www.nature.com/articles/s41467-019-10500-w}
 }

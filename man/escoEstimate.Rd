@@ -6,20 +6,26 @@
 \alias{escoEstimate.matrix}
 \title{Estimate esco simulation parameters}
 \usage{
-escoEstimate(counts, dirname, rho = FALSE, group = FALSE,
-  metacell = NULL, cellinfo = NULL, params = newescoParams())
-
-\method{escoEstimate}{SingleCellExperiment}(counts, dirname, rho = FALSE,
-  group = FALSE, metacell = NULL, cellinfo = NULL,
+escoEstimate(counts, dirname, group = FALSE, cellinfo = NULL,
   params = newescoParams())
 
-\method{escoEstimate}{matrix}(counts, dirname, rho = FALSE,
-  group = FALSE, metacell = NULL, cellinfo = NULL,
-  params = newescoParams())
+\method{escoEstimate}{SingleCellExperiment}(counts, dirname,
+  group = FALSE, cellinfo = NULL, params = newescoParams())
+
+\method{escoEstimate}{matrix}(counts, dirname, group = FALSE,
+  cellinfo = NULL, params = newescoParams())
 }
 \arguments{
 \item{counts}{either a counts matrix or a SingleCellExperiment object
 containing count data to estimate parameters from.}
+
+\item{dirname}{a tring of directory name to indicate where to save the results}
+
+\item{group}{whether the data is believed to be of discrete cell groups or not, 
+if yes, the corresponding cellinfo indicating the cell group labels need to be input as well}
+
+\item{cellinfo}{a vector of length n, where n is the number of cells. 
+Each entries is the group identity of a cell.}
 
 \item{params}{escoParams object to store estimated values in.}
 }
@@ -42,5 +48,7 @@ params
 \seealso{
 \code{\link{escoEstMean}},  \code{\link{escoEstLib}},
 \code{\link{escoEstOutlier}}, \code{\link{escoEstBCV}},
-\code{\link{escoEstDropout}}
+\code{\link{escoEstDropout}}, \code{\link{escoEstDE}},
+\code{\link{escoEstGroupMean}}, \code{\link{escoEstGroupLib}},
+\code{\link{escoEstGroupOutlier}}
 }

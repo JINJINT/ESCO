@@ -1,6 +1,15 @@
-#' @rdname newParams
+#' Initiate a new escoParam object
+#' 
+#' To initiate a new object for storing esco simulation parameters and process.
+#' The default parameters are set as in \code{escoParams}.
+#' 
+#' @param ... any additional parameter settings to override what is provided in
+#'        \code{\link{params}}.
+#'        
 #' @importFrom methods new
 #' @export
+#' @examples 
+#' para = newescoParams()
 newescoParams <- function(...) {
 
     params <- new("escoParams")
@@ -9,7 +18,7 @@ newescoParams <- function(...) {
     return(params)
 }
 
-#' @importFrom checkmate checkInt checkIntegerish checkNumber checkNumeric checkCharacter checkFlag
+#' @import checkmate
 setValidity("escoParams", function(object) {
 
     object <- expandParams(object)
@@ -47,32 +56,12 @@ setValidity("escoParams", function(object) {
                                              any.missing = FALSE, min.len = 1),
                 seed = checkInt(v$seed, lower = 0))
 
-    # # Check batchCells matches nCells, nBatches
-    # if (v$nCells != sum(v$batchCells) || nBatches != length(v$batchCells)) {
-    #     checks <- c(checks,
-    #                 "nCells, nBatches and batchesCells are not consistent")
-    # }
 
     # Check group.prob sums to 1
     if (sum(v$group.prob) != 1) {
         checks <- c(checks, "group.probs must sum to 1")
     }
-
-    # # Check path.from
-    # if (!(0 %in% v$path.from)) {
-    #    checks <- c(checks, path.from = "origin must be specified in path.from")
-    # } else if (any(v$path.from == seq_len(nGroups))) {
-    #     checks <- c(checks, "path cannot begin at itself")
-    # }
-
-    # # Check dropout type
-    # if (!(v$dropout.type %in%
-    #       c("none", "experiment", "batch", "group", "cell"))) {
-    #     checks <- c(checks,
-    #                 paste("dropout.type must be one of: 'none', 'experiment',",
-    #                       "'batch', 'group', 'cell'"))
-    # }
-    # 
+     
     if (all(checks == TRUE)) {
         valid <- TRUE
     } else {
@@ -86,26 +75,10 @@ setValidity("escoParams", function(object) {
 
 setMethod("setParam", "escoParams",function(object, name, value) {
     checkmate::assertString(name)
-
-    # if (name == "nCells" || name == "nBatches") {
-    #     stop(name, " cannot be set directly, set batchCells instead")
-    # }
-
-    #if (name == "nGroups") {
-        
-        #stop(name, " cannot be set directly, set group.prob instead")
-    #}
-
-    # if (name == "batchCells") {
-    #     object <- setParamUnchecked(object, "nCells", sum(value))
-    #     object <- setParamUnchecked(object, "nBatches", length(value))
-    # }
-    # 
     
     if (name == "group.prob") {
         object <- setParamUnchecked(object, "nGroups", length(value))
     }
-
 
     object <- callNextMethod()
 

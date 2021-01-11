@@ -15,9 +15,10 @@ getParams(params, names)
 List with the values of the selected parameters.
 }
 \description{
-Get multiple parameter values from a Params object (this function is borrowed from splatter).
+Get multiple parameter values from a Params object 
+(this function is borrowed from \code{\link[splatter]{splatter}}).
 }
 \examples{
-params <- newSimpleParams()
-getParams(params, c("nGenes", "nCells", "mean.rate"))
+params <- newescoParams()
+getParams(params, c("nGenes", "nCells"))
 }
