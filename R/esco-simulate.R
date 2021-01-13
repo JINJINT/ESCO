@@ -17,7 +17,8 @@
 #'
 #' @details
 #' Parameters can be set in a variety of ways. If no parameters are provided
-#' the default parameters are used. We adopts the way in \code{\link[splatter]{splatter}} to set up parameters, particularly, 
+#' the default parameters are used. We adopts the way in \code{\link[splatter]{splatter}}
+#' to set up parameters, particularly, 
 #' any parameters in \code{\link{params}} can be
 #' overridden by supplying additional arguments through a call to
 #' \code{\link{setParams}}. This design allows the user flexibility in
@@ -51,8 +52,8 @@
 #' intermediate values.
 #'
 #' @references
-#' Tian J, Wang J, Roeder K. ESCO: single cell expression simulation incorporating gene co-expression. 
-#' bioRxiv. 2020.
+#' Tian J, Wang J, Roeder K. ESCO: single cell expression simulation 
+#' incorporating gene co-expression. bioRxiv. 2020.
 #'
 #' Paper: \url{https://www.biorxiv.org/content/10.1101/2020.10.20.347211v1}
 #'
@@ -95,7 +96,6 @@
 #' @importFrom SingleCellExperiment SingleCellExperiment
 #' @importFrom methods validObject
 #' @importFrom svMisc progress
-#' @importFrom splatter getParam setParam setParams
 #' @export
 #' @rdname escoSimulate
 
@@ -128,8 +128,8 @@ escoSimulate <- function(params = newescoParams(),
       tree <- getParam(params, "tree")[[1]]
       nG <- length(tree$tip.label)
       if(nG!=nGroups){
-        message("The given number of Groups and Tree structure does not match, 
-                thus recalibarting to tree strucutrue with equal size groups....")
+        warning("The given number of Groups and Tree structure does not match...")
+        message("Recalibarting to tree strucutrue with equal size groups...")
         group.prob = rep(round(1/nG,3), nG)
         group.prob[1] = 1 - sum(group.prob[-1])
         params <- setParams(params, group.prob = group.prob)
@@ -203,8 +203,8 @@ escoSimulate <- function(params = newescoParams(),
     trials <- getParam(params, "trials")
 
     if(trials>1 & (!dir.exists(dirname))){
-        message("Warning: detect calls for multiple trials, but no directory to save files...")
-        message("Modify: only do the simulations with one trial...")
+        warning("Detect calls for multiple trials, but no directory to save files...")
+        message("Recalibrating to do simulations with only one trial...")
         params <- setParams(params, trials = 1)
         metadata(sim)$Params= params
     }
@@ -217,6 +217,10 @@ escoSimulate <- function(params = newescoParams(),
       if(length(dropout.type)>0){
         if("zeroinflate" %in% dropout.type)sim<-escoSimDownSample(sim, "", verbose,numCores) 
         if("downsample" %in% dropout.type)sim<-escoSimZeroInflate(sim, "", verbose)
+        if((!"zeroinflate" %in% dropout.type) & (!"downsample" %in% dropout.type)){
+          warning("Detect corrupted parameter dropout.type: should be either 'zeroinfalte' or 'downsample', or '' for no dropout...")
+          message("Recalibrating to simulation with no dropout...") 
+          }
       }
       return(sim)
     }
@@ -228,15 +232,23 @@ escoSimulate <- function(params = newescoParams(),
         if(verbose)message("Starting multiple trials.....")
         for(trial in 1:trials){
           if(dropout.type!="none"){
-            if("downsample" %in% dropout.type)sim<-escoSimDownSample(sim, trial,verbose,numCores) 
-            if("zeroinflate" %in% dropout.type)sim<-escoSimZeroInflate(sim, trial,verbose)
+            if("downsample" %in% dropout.type){
+              sim<-escoSimDownSample(sim, trial,verbose,numCores)  
+            }
+            if("zeroinflate" %in% dropout.type){
+              sim<-escoSimZeroInflate(sim, trial,verbose) 
+            }
           }
         }
       }
       else{
         if(dropout.type!="none"){
-          if("downsample" %in% dropout.type)sim<-escoSimDownSample(sim, "",verbose,numCores) 
-          if("zeroinflate" %in% dropout.type)sim<-escoSimZeroInflate(sim, "",verbose)
+          if("downsample" %in% dropout.type){
+            sim<-escoSimDownSample(sim, "",verbose,numCores)  
+          }
+          if("zeroinflate" %in% dropout.type){
+            sim<-escoSimZeroInflate(sim, "",verbose) 
+          }
         }
       }
       if(dir.exists(dirname))saveRDS(sim, paste0(dirname, "sim.rds"))
@@ -294,7 +306,6 @@ escoSimulateTraj <- function(params = newescoParams(),
 #' @importFrom SummarizedExperiment colData colData<- 
 #' @importFrom S4Vectors metadata metadata<-
 #' @importFrom stats rlnorm rnorm
-#' @importFrom splatter getParam setParam setParams
 #' @rdname escoSimLib
 escoSimLib <- function(sim, verbose) {
     params <- metadata(sim)$Params
@@ -357,7 +368,6 @@ escoSimLib <- function(sim, verbose) {
 #' @importFrom SummarizedExperiment rowData rowData<-
 #' @importFrom S4Vectors metadata metadata<-
 #' @importFrom stats rgamma median
-#' @importFrom splatter getParam setParam setParams
 #' @rdname escoSimGeneMean
 escoSimGeneMeans <- function(sim, verbose) {
     params <- metadata(sim)$Params
@@ -388,7 +398,8 @@ escoSimGeneMeans <- function(sim, verbose) {
 
     # Add expression outliers
     is.selected = as.logical(rbinom(nGenes, 1, out.prob))
-    outlier.facs <- getLNormFactors(nGenes, is.selected, 0, out.facLoc, out.facScale)
+    outlier.facs <- getLNormFactors(nGenes, is.selected, 0, 
+                                    out.facLoc, out.facScale)
     median.means.gene <- median(base.means.gene)
     outlier.means <- median.means.gene * outlier.facs
     is.outlier <- outlier.facs != 1
@@ -399,7 +410,7 @@ escoSimGeneMeans <- function(sim, verbose) {
     rowData(sim)$OutlierFactor <- outlier.facs
     rowData(sim)$GeneMean <- means.gene
     
-    batch.means.cell <- matrix(1, ncol = nCells, nrow = nGenes) * means.gene
+    batch.means.cell <- matrix(1, ncol = nCells, nrow = nGenes)*means.gene
     colnames(batch.means.cell) <- cell.names
     rownames(batch.means.cell) <- gene.names
     assays(sim)$Means <- batch.means.cell
@@ -422,7 +433,6 @@ escoSimGeneMeans <- function(sim, verbose) {
 #' @importFrom SummarizedExperiment rowData 
 #' @importFrom S4Vectors metadata metadata<-
 #' @importFrom stats ecdf
-#' @importFrom splatter getParam setParam setParams
 escoSimGroupDE <- function(sim, verbose) {
     params <- metadata(sim)$Params
     
@@ -530,7 +540,6 @@ escoSimGroupDE <- function(sim, verbose) {
 #' @importFrom S4Vectors metadata metadata<-
 #' @importFrom ape vcv.phylo
 #' @importFrom MASS mvrnorm
-#' @importFrom splatter getParam setParam setParams
 escoSimTreeDE <- function(sim, verbose) {
   params <- metadata(sim)$Params
   
@@ -609,7 +618,6 @@ escoSimTreeDE <- function(sim, verbose) {
 #' @rdname escoSimTrajDE
 #' @importFrom S4Vectors metadata metadata<-
 #' @importFrom igraph graph_from_data_frame topo_sort
-#' @importFrom splatter getParam setParam setParams
 escoSimTrajDE <- function(sim, verbose) {
   params = metadata(sim)$Params
   if (verbose) {message("Simulating trajetories...")}
@@ -700,7 +708,6 @@ escoSimTrajDE <- function(sim, verbose) {
 #' @rdname escoSimSingleCellMeans
 #' @importFrom SummarizedExperiment rowData colData assays assays<- 
 #' @importFrom S4Vectors metadata metadata<-
-#' @importFrom splatter getParam setParam setParams
 escoSimSingleCellMeans <- function(sim, verbose) {
     params <- metadata(sim)$Params
     nCells <- getParam(params, "nCells")
@@ -739,8 +746,6 @@ escoSimSingleCellMeans <- function(sim, verbose) {
 #' @rdname escoSimGroupCellMeans
 #' @importFrom SummarizedExperiment rowData colData assays assays<- 
 #' @importFrom S4Vectors metadata metadata<-
-#' @importFrom splatter getParam setParam setParams
-
 escoSimGroupCellMeans <- function(sim, verbose) {
     params <- metadata(sim)$Params
     nGenes <- getParam(params, "nGenes")
@@ -788,7 +793,6 @@ escoSimGroupCellMeans <- function(sim, verbose) {
 #' @importFrom S4Vectors metadata metadata<-
 #' @importFrom SC3 get_marker_genes
 #' @importFrom doBy which.minn which.maxn
-#' @importFrom splatter getParam setParam setParams
 escoSimTreeCellMeans <- function(sim, verbose) {
   params<-metadata(sim)$Params
   nGenes <- getParam(params, "nGenes")
@@ -854,7 +858,6 @@ escoSimTreeCellMeans <- function(sim, verbose) {
 #' library size. An adjustment for BCV is then applied. 
 #'
 #' @rdname escoSimTrajMeans
-#' @importFrom splatter getParam setParam setParams
 escoSimTrajCellMeans <- function(sim, verbose) {
   params = metadata(sim)$Params
   
@@ -944,7 +947,6 @@ escoSimTrajCellMeans <- function(sim, verbose) {
 #' @import foreach
 #' @import doSNOW
 #' @import progress
-#' @importFrom splatter getParam setParam setParams
 #' @rdname escoSimTrueCounts
 escoSimTrueCounts <- function(sim, type, verbose, numCores = 2) {
     params<-metadata(sim)$Params
@@ -1029,8 +1031,8 @@ escoSimTrueCounts <- function(sim, type, verbose, numCores = 2) {
         
         if(length(corr)!=0){
           if(length(corr)!=nGroups+1){
-            cat("The given list of correlation matrix should be of length 1 + number of groups...\n
-                 Using the randomized instead...\n")
+            warning("The given list of correlation matrix should be of length 1 + number of cell groups or empty...")
+            message("Recalibrating to use the randomized ones instead...")
           }
           else{
             rholist = list()
@@ -1131,7 +1133,10 @@ escoSimTrueCounts <- function(sim, type, verbose, numCores = 2) {
       if(verbose)cat("Saving true counts: ", 100*round(mean(true.count == 0), 4), "% zeros...\n")
       saveRDS(true.count, paste0(dirname,"True.rds"))
     }
-    if(sum(true.count==Inf)>0 & verbose)cat("Detecting",100*round(sum(true.count==Inf)/(nCells*nGenes),4),"% Inf true count value, modifying it to max + 10....\n")
+    if(sum(true.count==Inf)>0 & verbose){
+      cat("Detecting",100*round(sum(true.count==Inf)/(nCells*nGenes),4),
+          "% Inf true count value, modifying it to max + 10....\n")
+    }
     true.count[true.count==Inf] = max(true.count[true.count!=Inf]) + 10
     assays(sim)$TrueCounts <- true.count
     assays(sim)$CellMeans <- cell.means
@@ -1157,7 +1162,6 @@ escoSimTrueCounts <- function(sim, type, verbose, numCores = 2) {
 #' @importFrom SummarizedExperiment rowData colData assays assays<-
 #' @importFrom S4Vectors metadata metadata<-
 #' @importFrom stats rbinom
-#' @importFrom splatter getParam setParam setParams
 escoSimZeroInflate <- function(sim, trial, verbose) {
     params <- metadata(sim)$Params
     dirname <- getParam(params, "dirname")
@@ -1181,11 +1185,11 @@ escoSimZeroInflate <- function(sim, trial, verbose) {
     if(withcorr)cell.means <- assays(sim)$CellMeans
     else cell.means <- assays(sim)$BaseCellMeans
     
-    cell.normmeans  = median(colSums(cell.means)) * t(t(cell.means)/colSums(cell.means))
+    cell.normmeans=median(colSums(cell.means))*t(t(cell.means)/colSums(cell.means))
       
     if(length(dropout.mid)>1 & (!dir.exists(dirname))){
-      message("Warning: detect calls for simulating multiple configuration, but no directory to save files....")
-      message("Modifying: only do simulation for the first configuration....")
+      warning("Detect calls for simulating multiple configurations, but no directory to save files...")
+      message("Recalibrating to simulate for only the first configuration...")
       dropout.mid = dropout.mid[1]
     }
     
@@ -1196,10 +1200,10 @@ escoSimZeroInflate <- function(sim, trial, verbose) {
       dropout.shape <- rep(dropout.shape, nCells)
       
       # Generate probabilites based on expression
-      drop.prob <- sapply(seq_len(nCells), function(idx) {
+      drop.prob <- vapply(seq_len(nCells), function(idx) {
           eta <- log(cell.normmeans[,idx])
           return(logistic(eta, x0 = dropout.midd[idx], k = dropout.shape[idx]))
-      })
+      }, FUN.VALUE = rep(0,nGenes))
         
       if(!dropout.cort)keep.prob <- 1 - drop.prob 
       else{
@@ -1226,7 +1230,10 @@ escoSimZeroInflate <- function(sim, trial, verbose) {
         
       
       if(dir.exists(dirname)){
-        if(verbose)cat("Saving counts with dropout shape ",dm, ": ", 100*round(mean(counts==0), 4),"% zeros...\n ")
+        if(verbose){
+          cat("Saving counts with dropout shape ",dm, ": ",
+              100*round(mean(counts==0), 4),"% zeros...\n ") 
+        }
         saveRDS(counts, paste0(dirname, trial, "dm", round(dm, 3), "_Raw.rds"))
       }
     }
@@ -1239,14 +1246,16 @@ escoSimZeroInflate <- function(sim, trial, verbose) {
 #' (This function is borrowed from SymSim).
 #' 
 #' @references
-#' Zhang X, Xu C, Yosef N. Simulating multiple faceted variability in single cell RNA sequencing. 
+#' Zhang X, Xu C, Yosef N. Simulating multiple faceted 
+#' variability in single cell RNA sequencing. 
 #' Nature communications. 2019 Jun 13;10(1):1-6. 
 #' \url{https://www.nature.com/articles/s41467-019-10500-w}
 #' 
 #' @param numCores the number of cores used for parallelization, default is 2.
 #'        If set as NULL, then all the detected cores are used.
 #' @param sim SingleCellExperiment to add dropout to.
-#' @param trial the index of trial of simulation, all trials share the same truth but the 
+#' @param trial the index of trial of simulation, all trials 
+#'        share the same truth but the 
 #'        noise is added independently for each trial
 #' @param verbose whether to print the process or not
 #' @param nbatch number of batches, default is 1.
@@ -1258,7 +1267,6 @@ escoSimZeroInflate <- function(sim, trial, verbose) {
 #' @import foreach
 #' @import doSNOW
 #' @import progress
-#' @importFrom splatter getParam setParam setParams
 #' @rdname escoSimDownSample
 escoSimDownSample <- function(sim, trial, verbose, numCores =2, nbatch=1){
   params <-metadata(sim)$Params
@@ -1289,8 +1297,8 @@ escoSimDownSample <- function(sim, trial, verbose, numCores =2, nbatch=1){
   depth_lb <- 200 # lower bound for capture efficiency and sequencing depth  
   
   if((length(alpha_mean_vec)>1 | length(depth_mean_vec)>1) & (!dir.exists(dirname))){
-    message("Warning: detect calls for simulating multiple configuration, but no directory to save files....")
-    message("Modifying: only do simulation for the first configuration....")
+    warning("Detect calls for simulating multiple configurations, but no directory to save files...")
+    message("Recalibrating to simulate for only the first configuration...")
     alpha_mean_vec = alpha_mean_vec[1]
     depth_mean_vec =  depth_mean_vec[1]
   }
@@ -1299,29 +1307,39 @@ escoSimDownSample <- function(sim, trial, verbose, numCores =2, nbatch=1){
   
   for(alpha_mean in alpha_mean_vec){
     for(depth_mean in depth_mean_vec){
-      rate_2cap_vec <- rnorm_truc(n=ncells, mean = alpha_mean, sd=alpha_sd, a=rate_2cap_lb, b=Inf)
-      depth_vec <- rnorm_truc(n=ncells, mean = depth_mean, sd=depth_sd, a=depth_lb, b=Inf)
+      rate_2cap_vec <- rnorm_truc(n=ncells, 
+                                  mean = alpha_mean, sd=alpha_sd, 
+                                  a=rate_2cap_lb, b=Inf)
+      depth_vec <- rnorm_truc(n=ncells, 
+                              mean = depth_mean, sd=depth_sd, 
+                              a=depth_lb, b=Inf)
       if(is.null(numCores))numCores=detectCores() -1
       cl <- makeCluster(numCores)
       registerDoSNOW(cl)
       total <- ncells
       pb <- progress_bar$new(
-        format = "progress = :letter [:bar] :elapsed | eta: :eta", total = total, width = 60)
+        format = "progress = :letter [:bar] :elapsed | eta: :eta", 
+        total = total, width = 60)
       progress <- function(n){
         pb$tick(tokens = list(letter = rep("", total)[n]))
       } 
       opts <- list(progress = progress)
-      observed_counts <- foreach(i = c(1:total), .options.snow = opts, .export=c("amplify_cell")) %dopar% {
+      observed_counts <- foreach(i = c(1:total), 
+                                 .options.snow = opts, 
+                                 .export=c("amplify_cell")) %dopar% {
         return(amplify_cell(true_counts_1cell =  true_counts[, i], 
-                     rate_2cap=rate_2cap_vec[i], gene_len=gene_len, amp_bias = amp_bias, 
-                     rate_2PCR=rate_2PCR, nPCR1=nPCR1, nPCR2=nPCR2, LinearAmp = LinearAmp, 
-                     LinearAmp_coef = LinearAmp_coef, N_molecules_SEQ = depth_vec[i]))     
+                     rate_2cap=rate_2cap_vec[i], gene_len=gene_len, 
+                     amp_bias = amp_bias, rate_2PCR=rate_2PCR, nPCR1=nPCR1, 
+                     nPCR2=nPCR2, LinearAmp = LinearAmp, 
+                     LinearAmp_coef = LinearAmp_coef, 
+                     N_molecules_SEQ = depth_vec[i]))     
       }
       stopCluster(cl)
       
       ## assign random batch ID to cells
       batchIDs <- sample(1:nbatch, ncells, replace = TRUE)
-      meta_cell <- data.frame(alpha=rate_2cap_vec,depth=depth_vec, batch=batchIDs)
+      meta_cell <- data.frame(alpha=rate_2cap_vec,
+                              depth=depth_vec, batch=batchIDs)
       
 
       UMI_counts <- do.call(cbind, lapply(observed_counts, "[[", 1))
@@ -1334,8 +1352,14 @@ escoSimDownSample <- function(sim, trial, verbose, numCores =2, nbatch=1){
       colnames(observed_counts) = colnames(true_counts)
       
       if(dir.exists(dirname)){
-        if(verbose)cat("Saving observed counts with alpha mean", round(alpha_mean, 3), " and depth mean", depth_mean, ":", 100*round(mean(observed_counts == 0), 4), "% zeros...\n")
-        saveRDS(observed_counts, paste0(dirname, trial, "depme", depth_mean, "_alphame", round(alpha_mean,3), "_Raw.rds"))
+        if(verbose){
+          cat("Saving observed counts with alpha mean", round(alpha_mean, 3),
+              " and depth mean", depth_mean, ":",
+              100*round(mean(observed_counts == 0), 4), "% zeros...\n")
+        }
+        saveRDS(observed_counts, paste0(dirname, trial, 
+                                        "depme", depth_mean, "_alphame", 
+                                        round(alpha_mean,3), "_Raw.rds"))
       }
     }
   }
@@ -1347,13 +1371,17 @@ escoSimDownSample <- function(sim, trial, verbose, numCores =2, nbatch=1){
 #' Simulate technical biases.
 #' (This function is borrowed from SymSim).
 #' @references
-#' Zhang X, Xu C, Yosef N. Simulating multiple faceted variability in single cell RNA sequencing. 
-#' Nature communications. 2019 Jun 13;10(1):1-6. \url{https://www.nature.com/articles/s41467-019-10500-w}
+#' Zhang X, Xu C, Yosef N. Simulating multiple faceted 
+#' variability in single cell RNA sequencing. 
+#' Nature communications. 2019 Jun 13;10(1):1-6. 
+#' \url{https://www.nature.com/articles/s41467-019-10500-w}
 #' 
-#' @param lenslope amount of length bias. This value sould be less than 2*amp_bias_limit[2]/(nbins-1)
+#' @param lenslope amount of length bias. This value s
+#'        ould be less than 2*amp_bias_limit[2]/(nbins-1)
 #' @param nbins number of bins for gene length
 #' @param gene_len transcript length of each gene
-#' @param amp_bias_limit range of amplification bias for each gene, a vector of length ngenes
+#' @param amp_bias_limit range of amplification bias for 
+#'        each gene, a vector of length ngenes
 #' @return the technical bias
 cal_amp_bias <- function(lenslope, nbins, gene_len, amp_bias_limit){
   
@@ -1390,29 +1418,37 @@ cal_amp_bias <- function(lenslope, nbins, gene_len, amp_bias_limit){
 #' (This function is borrowed from SymSim).
 #' 
 #' @references
-#' Zhang X, Xu C, Yosef N. Simulating multiple faceted variability in single cell RNA sequencing. 
-#' Nature communications. 2019 Jun 13;10(1):1-6. \url{https://www.nature.com/articles/s41467-019-10500-w}
+#' Zhang X, Xu C, Yosef N. Simulating multiple faceted 
+#' variability in single cell RNA sequencing. 
+#' Nature communications. 2019 Jun 13;10(1):1-6. 
+#' \url{https://www.nature.com/articles/s41467-019-10500-w}
 #' 
 #' @param true_counts_1cell the true transcript counts for one cell (one vector)
 #' @param rate_2cap the capture efficiency for this cell
-#' @param gene_len gene lengths for the genes/transcripts, sampled from real human transcript length
+#' @param gene_len gene lengths for the genes/transcripts, 
+#'        sampled from real human transcript length
 #' @param amp_bias amplification bias for each gene, a vector of length ngenes
 #' @param rate_2PCR PCR efficiency, usually very high
 #' @param nPCR1 the number of PCR cycles
 #' @param nPCR2 the number of second PCR cycles
-#' @param LinearAmp if linear amplification is used for pre-amplification step, default is FALSE
-#' @param LinearAmp_coef the coeficient of linear amplification, that is, how many times each molecule is amplified by
+#' @param LinearAmp if linear amplification is used 
+#'        for pre-amplification step, default is FALSE
+#' @param LinearAmp_coef the coeficient of linear amplification, 
+#'        that is, how many times each molecule is amplified by
 #' @param N_molecules_SEQ number of molecules sent for sequencing; sequencing depth
 #' @importFrom utils data
 #' @return UMI counts 
-amplify_cell<- function(true_counts_1cell, rate_2cap, gene_len, amp_bias, 
-                          rate_2PCR, nPCR1, nPCR2, LinearAmp, LinearAmp_coef, N_molecules_SEQ){
+amplify_cell<- function(true_counts_1cell, rate_2cap, gene_len, 
+                        amp_bias, rate_2PCR, nPCR1, nPCR2, LinearAmp, 
+                        LinearAmp_coef, N_molecules_SEQ){
   
-  # expand transcript counts to a vector of binaries of the same length of as the number of transcripts
+  # expand transcript counts to a vector of binaries of 
+  # the same length of as the number of transcripts
   expandbinary<- function(true_counts_1cell){
     expanded_vec <- rep(1, sum(true_counts_1cell))
     trans_idx <- sapply(which(true_counts_1cell>0), 
-                        function(igene){return(rep(igene, true_counts_1cell[igene]))})
+                        function(igene)
+                          {return(rep(igene, true_counts_1cell[igene]))})
     trans_idx <- unlist(trans_idx)
     return(list(expanded_vec, trans_idx))
   }
@@ -1427,13 +1463,16 @@ amplify_cell<- function(true_counts_1cell, rate_2cap, gene_len, amp_bias,
   inds[[1]] <- which(expanded_vec > 0); expanded_vec <- expanded_vec[inds[[1]]]
   trans_idx <- trans_idx[inds[[1]]]
   
-  captured_vec <- expanded_vec; captured_vec[runif(length(captured_vec)) > rate_2cap] <- 0
-  if (sum(captured_vec[1:(length(captured_vec)-1)]) < 1) {return(rep(0, ngenes))}
+  captured_vec <- expanded_vec 
+  captured_vec[runif(length(captured_vec)) > rate_2cap] <- 0
+  if(sum(captured_vec[1:(length(captured_vec)-1)]) < 1)
+    {return(rep(0, ngenes))}
   captured_vec[length(captured_vec)] <- 1
-  inds[[2]] <- which(captured_vec > 0); captured_vec <- captured_vec[inds[[2]]]
+  inds[[2]] <- which(captured_vec > 0)
+  captured_vec <- captured_vec[inds[[2]]]
   trans_idx <- trans_idx[inds[[2]]]
   
-  amp_rate <- c((rate_2PCR+amp_bias[trans_idx[1:(length(trans_idx)-1)]]),1)
+  amp_rate<-c((rate_2PCR+amp_bias[trans_idx[1:(length(trans_idx)-1)]]),1)
   
   # pre-amplification:
   if (LinearAmp){
@@ -1445,15 +1484,12 @@ amplify_cell<- function(true_counts_1cell, rate_2cap, gene_len, amp_bias,
       eff <- runif(length(temp))*amp_rate
       v1 <- temp*(1-eff)
       round_down <- ((v1-floor(v1)) < runif(length(v1)))
-      v1[round_down] <- floor(v1[round_down]); v1[!round_down] <- ceiling(v1[!round_down])
+      v1[round_down] <- floor(v1[round_down])
+      v1[!round_down] <- ceiling(v1[!round_down])
       temp <- v1 + 2*(temp-v1)
     }
     PCRed_vec <- temp
   }
-  
-
-    
-    
     get_prob <- function(glength){
       if (glength >= 1000){prob <- 0.7} else{
         if (glength >= 100 & glength < 1000){prob <- 0.78}
@@ -1475,7 +1511,9 @@ amplify_cell<- function(true_counts_1cell, rate_2cap, gene_len, amp_bias,
     
     SEQ_efficiency <- N_molecules_SEQ/sum(frag_vec)
     if (SEQ_efficiency >= 1){sequenced_vec <- frag_vec} else {
-      sequenced_vec <- sapply(frag_vec,function(Y){rbinom(n=1,size=Y,prob=SEQ_efficiency)})}
+      sequenced_vec <- sapply(frag_vec,
+                              function(Y)
+                                {rbinom(n=1,size=Y,prob=SEQ_efficiency)})}
     
     temp_vec <- c(sequenced_vec,1)
     for (i in seq(2,1,-1)){

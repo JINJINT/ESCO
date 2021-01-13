@@ -43,7 +43,7 @@ Suggests:
     covr,
     knitr,
     lme4,
-    testthat,
+    testthat (>= 2.0.0),
     rmarkdown,
     scDD,
     scran,
@@ -85,3 +85,4 @@ Encoding: UTF-8
 VignetteBuilder: knitr
 Language: en-GB
 LazyData: TRUE 
+Config/testthat/edition: 2

@@ -2,10 +2,14 @@
 #' 
 #' compute the gene co-expression netowrk using different correlation metric
 #' @param count a gene by cell matrix containing the expression count.
-#' @param genes a vector of names of selected genes, default is NULL, indicating choosing all the genes.
-#' @param CPM whether to use Counts Per Millon normalization on the whole data sets or not.
-#' @param CPM2 whether to use Counts Per Millon normalization on the selected genes or not.
-#' @param name a string indicating what type of correlation metric ("pearson", "spearman", "kendall","cosine") to use, 
+#' @param genes a vector of names of selected genes, 
+#'        default is NULL, indicating choosing all the genes.
+#' @param CPM whether to use Counts Per Millon 
+#'        normalization on the whole data sets or not.
+#' @param CPM2 whether to use Counts Per Millon 
+#'        normalization on the selected genes or not.
+#' @param name a string indicating what type of 
+#'        correlation metric ("pearson", "spearman", "kendall","cosine") to use, 
 #'        default options is "pearson". 
 #' @return a correlation matrix
 #' @rdname escogcn
@@ -15,7 +19,10 @@
 #' @export
 gcn<-function(count, genes = NULL, CPM = TRUE, CPM2 = FALSE, 
               name = "pearson"){
-  if(is.null(genes))genes = rownames(count)
+  if(is.null(genes)){
+    if(is.null(rownames(count)))rownames(count) = seq_len(nrow(count))
+    genes = rownames(count)
+  }
   if(CPM){
       count = 10^6*t(t(count)/colSums(count))
   }
@@ -39,17 +46,22 @@ cosine<-function(DF){
 
 #' Compute the estiamtion error of gene co-expression networks
 #' 
-#' Compute the error between the true and estimated gene co-expression network using different error measure
+#' Compute the error between the true and estimated gene co-expression 
+#' network using different error measure
 #' @param gcnlist a list of gene coexpression networks of the same set of genes, 
 #'        where the first is taken as the truth, and the rest are all estimations.
-#' @param method a vector of error measure names, possible choices are mean square error "MSE", 
-#'        Spectral norm "Spectral", infinite norm "Inf", l1 norm, "L1", Adjusted rand index \code{\link{adjustedRand}} with 
+#' @param method a vector of error measure names, possible choices are 
+#'        mean square error "MSE", Spectral norm "Spectral", infinite norm "Inf", 
+#'        l1 norm, "L1", Adjusted rand index \code{\link{adjustedRand}} with 
 #'        \code{clusk} numbers of clusters "ARI", Jaccard index with 
 #'        \code{clusk} numbers of clusters "Jaccard".
-#' @param clustk the number of clusters used in "ARI" and "Jaccard" error measure. Default is 9.
-#' @param clustmethod what clustering method to use. Possible choices are hirarchical clustering "hclust" \code{\link{hclust}}, 
+#' @param clustk the number of clusters used in "ARI" 
+#'        and "Jaccard" error measure. Default is 9.
+#' @param clustmethod what clustering method to use. 
+#'        Possible choices are hirarchical clustering "hclust" \code{\link{hclust}}, 
 #'        and "kmeans" \code{\link{kmeans}}. Default is "hclust".
-#' @return a matrix of error levels, where each row indicates the given different estimation of gcn, 
+#' @return a matrix of error levels, where each row 
+#'         indicates the given different estimation of gcn, 
 #'         and each column indicates different error measure.
 #' @rdname escogcnerr
 #' @importFrom stats as.dist hclust
@@ -61,7 +73,9 @@ cosine<-function(DF){
 #' gcnerr = gcn_error(gcnlist)
 #' @export
 gcn_error<-function(gcnlist, 
-                    method = c("MSE", "Spectral", "Inf", "L1", "ARI", "Jaccard"),
+                    method = c("MSE", "Spectral", 
+                               "Inf", "L1", 
+                               "ARI", "Jaccard"),
                     clustk = 9, clustmethod = "hclust"){
   gcn_true = gcnlist[[1]]
   gcn_true[is.na(gcn_true)] = 0
@@ -72,10 +86,18 @@ gcn_error<-function(gcnlist,
     gcn_diff = gcn_true-gcn
     gcn_diff[is.na(gcn_diff)]=0
     
-    if(method=="MSE")gcn_error = (norm(gcn_diff, type = "F")/nrow(gcn_diff))^2
-    if(method=="Spectral")gcn_error = norm(gcn_diff, type = "2")
-    if(method=="Inf")gcn_error = norm(gcn_diff, type = "I")
-    if(method=="L1")gcn_error = norm(gcn_diff, type = "O")
+    if(method=="MSE")
+      gcn_error = (norm(gcn_diff, type = "F")/nrow(gcn_diff))^2
+    
+    if(method=="Spectral")
+      gcn_error = norm(gcn_diff, type = "2")
+    
+    if(method=="Inf")
+      gcn_error = norm(gcn_diff, type = "I")
+    
+    if(method=="L1")
+      gcn_error = norm(gcn_diff, type = "O")
+    
     if(method %in% c("ARI", "Jaccard")){
       if(clustmethod == "hclust"){
         d_true = as.dist((1-gcn_true)/2)
@@ -91,14 +113,16 @@ gcn_error<-function(gcnlist,
       }
       true_clust = memb_true
       clust = memb
-      if(method=="ARI")gcn_error =  adjustedRand(clust, true_clust)[2]
-      if(method=="Jaccard")gcn_error =  adjustedRand(clust, true_clust)[5]
+      if(method=="ARI")
+        gcn_error =  adjustedRand(clust, true_clust)[2]
+      
+      if(method=="Jaccard")
+        gcn_error =  adjustedRand(clust, true_clust)[5]
     }
     gcnerror[i-1] = gcn_error
   }
   return(gcnerror)
 }
-
 
 
 

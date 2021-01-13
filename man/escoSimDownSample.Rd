@@ -10,7 +10,8 @@ escoSimDownSample(sim, trial, verbose, numCores = 2, nbatch = 1)
 \arguments{
 \item{sim}{SingleCellExperiment to add dropout to.}
 
-\item{trial}{the index of trial of simulation, all trials share the same truth but the 
+\item{trial}{the index of trial of simulation, all trials 
+share the same truth but the 
 noise is added independently for each trial}
 
 \item{verbose}{whether to print the process or not}
@@ -28,7 +29,8 @@ Simulate observed count matrix though downsampling.
 (This function is borrowed from SymSim).
 }
 \references{
-Zhang X, Xu C, Yosef N. Simulating multiple faceted variability in single cell RNA sequencing. 
+Zhang X, Xu C, Yosef N. Simulating multiple faceted 
+variability in single cell RNA sequencing. 
 Nature communications. 2019 Jun 13;10(1):1-6. 
 \url{https://www.nature.com/articles/s41467-019-10500-w}
 }

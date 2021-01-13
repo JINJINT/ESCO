@@ -8,7 +8,8 @@
 #'        containing count data to estimate parameters from.
 #' @param dirname a tring of directory name to indicate where to save the results
 #' @param group whether the data is believed to be of discrete cell groups or not, 
-#'        if yes, the corresponding cellinfo indicating the cell group labels need to be input as well
+#'        if yes, the corresponding cellinfo indicating the 
+#'        cell group labels need to be input as well
 #' @param cellinfo a vector of length n, where n is the number of cells. 
 #'        Each entries is the group identity of a cell.
 #' @param params escoParams object to store estimated values in.
@@ -32,7 +33,8 @@
 #' @rdname escoEstimate
 #' @importFrom splatter setParams setParam getParams getParam 
 #' @export
-escoEstimate <- function(counts, dirname, group = FALSE, cellinfo = NULL, params = newescoParams()) {
+escoEstimate <- function(counts, dirname, group = FALSE, 
+                         cellinfo = NULL, params = newescoParams()) {
     UseMethod("escoEstimate")
 }
 
@@ -40,7 +42,8 @@ escoEstimate <- function(counts, dirname, group = FALSE, cellinfo = NULL, params
 #' @importFrom splatter setParams setParam getParams getParam
 #' @export
 #' 
-escoEstimate.SingleCellExperiment <- function(counts, dirname, group = FALSE, cellinfo = NULL,
+escoEstimate.SingleCellExperiment <- function(counts, dirname, 
+                                              group = FALSE, cellinfo = NULL,
                                                params = newescoParams()) {
     counts <- BiocGenerics::counts(counts)
     escoEstimate(counts, params)
@@ -52,7 +55,8 @@ escoEstimate.SingleCellExperiment <- function(counts, dirname, group = FALSE, ce
 #' @importFrom SC3 get_marker_genes
 #' @importFrom splatter setParams setParam getParams getParam
 #' @export
-escoEstimate.matrix <- function(counts, dirname, group = FALSE, cellinfo = NULL, params = newescoParams()) {
+escoEstimate.matrix <- function(counts, dirname, group = FALSE, 
+                                cellinfo = NULL, params = newescoParams()) {
 
   checkmate::assertClass(params, "escoParams")
 
@@ -103,7 +107,8 @@ escoEstimate.matrix <- function(counts, dirname, group = FALSE, cellinfo = NULL,
     params <- setParams(params, de.prob = de.prob, de.downProb = 0)
     
     housegenes <- markers$genes[which(markers$auroc < 0.2)]
-    housegenes <- housegenes[which(rowMeans(norm.counts[housegenes,])> quantile(rowMeans(norm.counts), 0.8))]
+    housegenes <- housegenes[which(rowMeans(norm.counts[housegenes,])>
+                                     quantile(rowMeans(norm.counts), 0.8))]
     if(length(housegenes) > 0){
       house.prob = length(housegenes)/nrow(counts)
     }
@@ -118,10 +123,13 @@ escoEstimate.matrix <- function(counts, dirname, group = FALSE, cellinfo = NULL,
     DE.normcounts = norm.counts[degenes.name,]
     DE.counts = counts[degenes.name,]
   
-    params <- escoEstGroupMean(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params)
+    params <- escoEstGroupMean(nonDE.normcounts, 
+                               DE.normcounts, degenes, cellinfo, params)
     params <- escoEstBCV(counts, norm.counts, params, cellinfo)
-    params <- escoEstGroupOutlier(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params)
-    de <- escoEstDE(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params)
+    params <- escoEstGroupOutlier(nonDE.normcounts, 
+                                  DE.normcounts, degenes, cellinfo, params)
+    de <- escoEstDE(nonDE.normcounts, 
+                    DE.normcounts, degenes, cellinfo, params)
     de.facLoc = de[[1]]
     de.facScale = de[[2]]
     de.rank = de[[3]]
@@ -129,11 +137,15 @@ escoEstimate.matrix <- function(counts, dirname, group = FALSE, cellinfo = NULL,
     params <- setParams(params, de.facLoc = de.facLoc,
                         de.facScale  = de.facScale,
                         de.rank = de.rank,
-                        de.facrank = de.facrank, nGroups = length(de.rank))
+                        de.facrank = de.facrank, 
+                        nGroups = length(de.rank))
     params <- escoEstDropout(counts, params)
     params <- setParams(params, dropout.type = "zeroinflate")
     
-    params <- setParams(params, nGenes = nrow(counts), nCells = ncol(counts), deall.prob = deall.prob, house.prob = house.prob)
+    params <- setParams(params, nGenes = nrow(counts), 
+                        nCells = ncol(counts), 
+                        deall.prob = deall.prob, 
+                        house.prob = house.prob)
     return(params)
   }
 }
@@ -275,7 +287,8 @@ escoEstMean <- function(normcounts, counts, params) {
   }
   
   params <- setParams(params, mean.shape = unname(fit$estimate["shape"]),
-                      mean.rate = unname(fit$estimate["rate"]), mean.dens = density(lmeans))
+                      mean.rate = unname(fit$estimate["rate"]), 
+                      mean.dens = density(lmeans))
   
   return(params)
 }
@@ -339,7 +352,8 @@ escoEstOutlier <- function(norm.counts, params) {
 #' @param norm.counts normalized counts matrix to estimate parameters from.
 #' @param params escoParams object to store estimated values in.
 #' @param cellinfo info about the identity of each cell in the cell structure.
-#'        If cellinfo is not null, then BCV is estiamted adjusted to the cell structures 
+#'        If cellinfo is not null, then BCV is 
+#'        estiamted adjusted to the cell structures 
 #' @details
 #' The \code{\link[edgeR]{estimateDisp}} function is used to estimate the common
 #' dispersion and prior degrees of freedom. See
@@ -388,16 +402,20 @@ escoEstBCV <- function(counts, norm.counts, params, cellinfo = NULL){
 
 #' Estimate esco dropout parameters
 #'
-#' Estimate the midpoint and shape parameters for the logistic function used
+#' Estimate the midpoint and shape parameters 
+#' for the logistic function used
 #' when simulating dropout.
 #'
 #' @param norm.counts library size normalised counts matrix.
 #' @param params escoParams object to store estimated values in.
 #'
 #' @details
-#' Logistic function parameters are estimated by fitting a logistic function
-#' to the relationship between log2 mean gene expression and the proportion of
-#' zeros in each gene. See \code{\link[stats]{nls}} for details of fitting.
+#' Logistic function parameters are estimated 
+#' by fitting a logistic function
+#' to the relationship between log2 mean gene 
+#' expression and the proportion of
+#' zeros in each gene. See \code{\link[stats]{nls}} 
+#' for details of fitting.
 #' Note this is done on the experiment level.
 #'
 #' @return escoParams object with estimated values.
@@ -436,10 +454,12 @@ escoEstDropout <- function(norm.counts, params) {
 #' Estimate rate and shape parameters for the gamma distribution used to
 #' simulate gene expression means for each cell group.
 #'
-#' @param nonDE.normcounts library size normalised counts matrix for nonDE genes.
+#' @param nonDE.normcounts library size normalised
+#'        counts matrix for nonDE genes.
 #' @param DE.normcounts library size normalised counts matrix for DE genes.
 #' @param degenes a dataframe of two columns: "genes" and "clust", 
-#'        where "genes" contains the position of a degenes, and "clust" contains the 
+#'        where "genes" contains the position of a degenes, 
+#'        and "clust" contains the 
 #'        corresponding cell group the degenes marks.
 #' @param cellinfo a vector of length n, where n is the number of cells. 
 #'        Each entries is the group identity of a cell.
@@ -448,8 +468,9 @@ escoEstDropout <- function(norm.counts, params) {
 #' @details
 #' Parameter for the gamma distribution are estimated by fitting the mean
 #' normalised counts using \code{\link[fitdistrplus]{fitdist}}. Particularly, 
-#' the entries corresponds to DE genes in the cell group it marks are not considered in the fitting. 
-#' The 'maximum goodness-of-fit estimation' method is used to minimise the Cramer-von Mises
+#' the entries corresponds to DE genes in the cell group it marks 
+#' are not considered in the fitting. The 'maximum goodness-of-fit 
+#' estimation' method is used to minimise the Cramer-von Mises
 #' distance. This can fail in some situations, in which case the 'method of
 #' moments estimation' method is used instead. Prior to fitting the means are
 #' winsorized by setting the top and bottom 10 percent of values to the 10th
@@ -491,7 +512,8 @@ escoEstGroupMean <- function(nonDE.normcounts, DE.normcounts, degenes, cellinfo,
 #' The Shapiro-Wilks test is used to determine if the library sizes are
 #' normally distributed. If so a normal distribution is fitted to the library
 #' sizes, if not (most cases) a log-normal distribution is fitted and the
-#' estimated parameters are added to the params object. Specifically, for a cell group, the fitting
+#' estimated parameters are added to the params object. 
+#' Specifically, for a cell group, the fitting
 #' process uses only the cell samples within this cell group. See
 #' \code{\link[fitdistrplus]{fitdist}} for details on the fitting.
 #'
@@ -637,7 +659,10 @@ escoEstDE <- function(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params
     de.facScale[idx] = unname(fit$estimate["sdlog"])
   }
   
-  return(list(de.facLoc = de.facLoc, de.facScale = de.facScale, de.rank = de.rank, de.facrank = de.facrank))
+  return(list(de.facLoc = de.facLoc, 
+              de.facScale = de.facScale, 
+              de.rank = de.rank, 
+              de.facrank = de.facrank))
 }
 
 
@@ -668,8 +693,8 @@ escoEstDE <- function(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params
 #' scale parameters using \code{\link[fitdistrplus]{fitdist}}.
 #'
 #' @return escoParams object with estimated values.
-#' @importFrom splatter setParams setParam getParams getParam
-escoEstGroupOutlier <- function(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params) {
+escoEstGroupOutlier <- function(nonDE.normcounts, DE.normcounts, 
+                                degenes, cellinfo, params) {
     means <- rowMeans(nonDE.normcounts)
     for(idx in seq_len(length(unique(degenes$clusts)))){
       marker = degenes$genes[which(degenes$clusts==idx)]

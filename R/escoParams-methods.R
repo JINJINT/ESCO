@@ -20,10 +20,8 @@ newescoParams <- function(...) {
     return(params)
 }
 
-#' Check the validaty of esco parameter object
-#' 
+# Check the validaty of esco parameter object
 #' @import checkmate
-
 setValidity("escoParams", function(object) {
     object <- expandParams(object)
     v <- getParams(object, c(slotNames(object)))
@@ -76,9 +74,6 @@ setValidity("escoParams", function(object) {
     return(valid)
 })
 
-#' Set an entry esco parameter object
-#' @seealso 
-#' \code{\link[splatter]{setParam}}
 #' @rdname setParam
 setMethod("setParam", "escoParams",function(object, name, value) {
     checkmate::assertString(name)
@@ -93,8 +88,6 @@ setMethod("setParam", "escoParams",function(object, name, value) {
 })
 
 
-#' Set multiple entries esco parameter object
-#' \code{\link[splatter]{setParams}}
 #' @rdname setParams
 setMethod("setParams", "escoParams", function(object, update = NULL, ...) {
     
@@ -108,16 +101,14 @@ setMethod("setParams", "escoParams", function(object, update = NULL, ...) {
     return(object)
 })
 
-#' Expand multiple entries esco parameter object
+
 #' @rdname expandParams
 setMethod("expandParams", "escoParams", function(object) {
-    
     n <- getParam(object, "nGroups")
     
     vectors <- c("de.prob", "de.downProb", "de.facLoc", "de.facScale")
     
     object <- callNextMethod(object, vectors, n)
-    
     return(object)
 })
 

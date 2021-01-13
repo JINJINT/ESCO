@@ -15,12 +15,16 @@ escoEstDropout(norm.counts, params)
 escoParams object with estimated values.
 }
 \description{
-Estimate the midpoint and shape parameters for the logistic function used
+Estimate the midpoint and shape parameters 
+for the logistic function used
 when simulating dropout.
 }
 \details{
-Logistic function parameters are estimated by fitting a logistic function
-to the relationship between log2 mean gene expression and the proportion of
-zeros in each gene. See \code{\link[stats]{nls}} for details of fitting.
+Logistic function parameters are estimated 
+by fitting a logistic function
+to the relationship between log2 mean gene 
+expression and the proportion of
+zeros in each gene. See \code{\link[stats]{nls}} 
+for details of fitting.
 Note this is done on the experiment level.
 }

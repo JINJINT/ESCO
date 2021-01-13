@@ -8,13 +8,15 @@
 cal_amp_bias(lenslope, nbins, gene_len, amp_bias_limit)
 }
 \arguments{
-\item{lenslope}{amount of length bias. This value sould be less than 2*amp_bias_limit[2]/(nbins-1)}
+\item{lenslope}{amount of length bias. This value s
+ould be less than 2*amp_bias_limit[2]/(nbins-1)}
 
 \item{nbins}{number of bins for gene length}
 
 \item{gene_len}{transcript length of each gene}
 
-\item{amp_bias_limit}{range of amplification bias for each gene, a vector of length ngenes}
+\item{amp_bias_limit}{range of amplification bias for 
+each gene, a vector of length ngenes}
 }
 \value{
 the technical bias
@@ -24,6 +26,8 @@ Simulate technical biases.
 (This function is borrowed from SymSim).
 }
 \references{
-Zhang X, Xu C, Yosef N. Simulating multiple faceted variability in single cell RNA sequencing. 
-Nature communications. 2019 Jun 13;10(1):1-6. \url{https://www.nature.com/articles/s41467-019-10500-w}
+Zhang X, Xu C, Yosef N. Simulating multiple faceted 
+variability in single cell RNA sequencing. 
+Nature communications. 2019 Jun 13;10(1):1-6. 
+\url{https://www.nature.com/articles/s41467-019-10500-w}
 }

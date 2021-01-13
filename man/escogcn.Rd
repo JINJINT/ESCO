@@ -10,13 +10,17 @@ gcn(count, genes = NULL, CPM = TRUE, CPM2 = FALSE,
 \arguments{
 \item{count}{a gene by cell matrix containing the expression count.}
 
-\item{genes}{a vector of names of selected genes, default is NULL, indicating choosing all the genes.}
+\item{genes}{a vector of names of selected genes, 
+default is NULL, indicating choosing all the genes.}
 
-\item{CPM}{whether to use Counts Per Millon normalization on the whole data sets or not.}
+\item{CPM}{whether to use Counts Per Millon 
+normalization on the whole data sets or not.}
 
-\item{CPM2}{whether to use Counts Per Millon normalization on the selected genes or not.}
+\item{CPM2}{whether to use Counts Per Millon 
+normalization on the selected genes or not.}
 
-\item{name}{a string indicating what type of correlation metric ("pearson", "spearman", "kendall","cosine") to use, 
+\item{name}{a string indicating what type of 
+correlation metric ("pearson", "spearman", "kendall","cosine") to use, 
 default options is "pearson".}
 }
 \value{

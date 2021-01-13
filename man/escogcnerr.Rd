@@ -11,22 +11,27 @@ gcn_error(gcnlist, method = c("MSE", "Spectral", "Inf", "L1", "ARI",
 \item{gcnlist}{a list of gene coexpression networks of the same set of genes, 
 where the first is taken as the truth, and the rest are all estimations.}
 
-\item{method}{a vector of error measure names, possible choices are mean square error "MSE", 
-Spectral norm "Spectral", infinite norm "Inf", l1 norm, "L1", Adjusted rand index \code{\link{adjustedRand}} with 
+\item{method}{a vector of error measure names, possible choices are 
+mean square error "MSE", Spectral norm "Spectral", infinite norm "Inf", 
+l1 norm, "L1", Adjusted rand index \code{\link{adjustedRand}} with 
 \code{clusk} numbers of clusters "ARI", Jaccard index with 
 \code{clusk} numbers of clusters "Jaccard".}
 
-\item{clustk}{the number of clusters used in "ARI" and "Jaccard" error measure. Default is 9.}
+\item{clustk}{the number of clusters used in "ARI" 
+and "Jaccard" error measure. Default is 9.}
 
-\item{clustmethod}{what clustering method to use. Possible choices are hirarchical clustering "hclust" \code{\link{hclust}}, 
+\item{clustmethod}{what clustering method to use. 
+Possible choices are hirarchical clustering "hclust" \code{\link{hclust}}, 
 and "kmeans" \code{\link{kmeans}}. Default is "hclust".}
 }
 \value{
-a matrix of error levels, where each row indicates the given different estimation of gcn, 
+a matrix of error levels, where each row 
+        indicates the given different estimation of gcn, 
         and each column indicates different error measure.
 }
 \description{
-Compute the error between the true and estimated gene co-expression network using different error measure
+Compute the error between the true and estimated gene co-expression 
+network using different error measure
 }
 \examples{
 data1 = matrix(rnorm(100),20,5)

@@ -10,31 +10,45 @@ heatdata(datalist, dirname = NULL, genes = NULL, cellinfo = NULL,
   width = 8, height = 8, color = "YlGnBu:100", extrainfo = "")
 }
 \arguments{
-\item{datalist}{a list of gene expression matrixes of size p by n, (where rows are of the same set of genes and columns are of the same set of cells).}
+\item{datalist}{a list of gene expression matrixes of size p by n, 
+(where rows are of the same set of genes and columns are 
+of the same set of cells).}
 
-\item{dirname}{a string of directory names to save the plots, default as NULL, that is not saving but directly showing the plots.}
+\item{dirname}{a string of directory names to save the plots, 
+default as NULL, that is not saving but directly showing the plots.}
 
 \item{genes}{a vector contains names of the genes to be plotted.}
 
-\item{cellinfo}{a dataframe contains a column named 'newcelltype' of length n, where each entries corresponds to 
-the cell group identity that a cell belongs to. This information will be used for annotating the final heatmap.
+\item{cellinfo}{a dataframe contains a column named 'newcelltype' 
+of length n, where each entries corresponds to 
+the cell group identity that a cell belongs to. 
+This information will be used for annotating the final heatmap.
 Default is NULL, that is no cell annotation.}
 
-\item{rowv}{a vector contains the ordering of the genes for all data matrix in the final heatmap.
-Default is FALSE, that the ordering resulted from the clustering (\code{hclust}) result of the first data matrix in datalist.}
+\item{rowv}{a vector contains the ordering of the genes 
+for all data matrix in the final heatmap.
+Default is FALSE, that the ordering resulted from 
+the clustering (\code{hclust}) result of the first 
+data matrix in datalist.}
 
-\item{colv}{a vector contains the ordering of the cells for all data matrix in the final heatmap.
-Default is FALSE, that the ordering resulted from the clustering (\code{hclust}) result of the first data matrix in datalist.}
+\item{colv}{a vector contains the ordering of the cells 
+for all data matrix in the final heatmap.
+Default is FALSE, that the ordering resulted 
+from the clustering (\code{hclust}) result of 
+the first data matrix in datalist.}
 
-\item{geneinfo}{a dataframe contains a column named 'newcelltype' of length p, where each entries corresponds to 
-the cell group identity that a gene marks. This information will be used for annotating the final heatmap.
+\item{geneinfo}{a dataframe contains a column named 
+'newcelltype' of length p, where each entries corresponds to 
+the cell group identity that a gene marks. 
+This information will be used for annotating the final heatmap.
 Default is NULL, that is no gene annotation.}
 
 \item{log}{whether take the log transform of the data}
 
 \item{norm}{whether take the counts per million normalization of the data}
 
-\item{maxdata}{the maximun cutoff of the correlation, default is NULL, that is no cutoff.}
+\item{maxdata}{the maximun cutoff of the correlation, 
+default is NULL, that is no cutoff.}
 
 \item{mindata}{the minmum cutoff of the correlation, default is 0.}
 
@@ -48,13 +62,16 @@ Default is NULL, that is no gene annotation.}
 
 \item{color}{what set of color panel to use, default is "YlGnBu:100".}
 
-\item{extrainfo}{a string of extra information to saved in the final plot filename, default as "".}
+\item{extrainfo}{a string of extra information to 
+saved in the final plot filename, default as "".}
 }
 \value{
-heatmap plots showing immediately or pdf files saved to desinated directory.
+heatmap plots showing immediately or pdf 
+        files saved to desinated directory.
 }
 \description{
-Heatmap plot a set of gene expression matrix of the same set of gene and cells with proper annotations
+Heatmap plot a set of gene expression matrix of the same 
+set of gene and cells with proper annotations
 }
 \examples{
 data = matrix(rnorm(100),20,5)

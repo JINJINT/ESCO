@@ -46,7 +46,8 @@ a hierarchical copula model.
 }
 \details{
 Parameters can be set in a variety of ways. If no parameters are provided
-the default parameters are used. We adopts the way in \code{\link[splatter]{splatter}} to set up parameters, particularly, 
+the default parameters are used. We adopts the way in \code{\link[splatter]{splatter}}
+to set up parameters, particularly, 
 any parameters in \code{\link{params}} can be
 overridden by supplying additional arguments through a call to
 \code{\link{setParams}}. This design allows the user flexibility in
@@ -95,8 +96,8 @@ params <- newescoParams(nGenes = 100, mean.rate = 0.5)
 
 }
 \references{
-Tian J, Wang J, Roeder K. ESCO: single cell expression simulation incorporating gene co-expression. 
-bioRxiv. 2020.
+Tian J, Wang J, Roeder K. ESCO: single cell expression simulation 
+incorporating gene co-expression. bioRxiv. 2020.
 
 Paper: \url{https://www.biorxiv.org/content/10.1101/2020.10.20.347211v1}
 

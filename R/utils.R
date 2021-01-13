@@ -238,7 +238,7 @@ getLNormFactors <- function(n.facs, is.selected, neg.prob=0, fac.loc, fac.scale)
   }
   dir.selected <- (-1)^rbinom(n.selected, 1, neg.prob)
   if(length(fac.loc)>1){
-    facs.selected <- sapply(1:n.selected, function(i)rlnorm(1, fac.loc[i], fac.scale))
+    facs.selected <- sapply(seq_len(n.selected), function(i)rlnorm(1, fac.loc[i], fac.scale))
   }
   else facs.selected <- rlnorm(n.selected, fac.loc, fac.scale)
   

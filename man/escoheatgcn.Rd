@@ -9,16 +9,23 @@ heatgcn(gcnlist, dirname = NULL, geneinfo = NULL, ord = NULL,
   extrainfo = NULL, ncol = 4, size = 2)
 }
 \arguments{
-\item{gcnlist}{a list of gene correlation matrixes of size p by p, where the rows and columns are of the same set of genes.}
+\item{gcnlist}{a list of gene correlation matrixes of
+size p by p, where the rows and columns are of the same set of genes.}
 
-\item{dirname}{a string of directory names to save the plots, default as NULL, that is not saving but directly showing the plots.}
+\item{dirname}{a string of directory names to save the plots, 
+default as NULL, that is not saving but directly showing the plots.}
 
-\item{geneinfo}{a dataframe contains a column named 'newcelltype' of length p, where each entries corresponds to 
-the cell group identity that a gene marks. This information will be used for annotating the final heatmap.
+\item{geneinfo}{a dataframe contains a column named 
+'newcelltype' of length p, where each entries corresponds to 
+the cell group identity that a gene marks. 
+This information will be used for annotating the final heatmap.
 Default is NULL, that is no annotation.}
 
-\item{ord}{a vector contains the ordering of the genes for all correlation matrix in the final heatmap.
-Default is NULL, that the ordering resulted from the clustering (\code{hclust}) result of the first gene correlation matrix in gcnlist.}
+\item{ord}{a vector contains the ordering of the genes
+for all correlation matrix in the final heatmap.
+Default is NULL, that the ordering resulted from 
+the clustering (\code{hclust}) result of the first 
+gene correlation matrix in gcnlist.}
 
 \item{maxgcn}{the maximun cutoff of the correlation, default is 1.}
 
@@ -28,17 +35,20 @@ Default is NULL, that the ordering resulted from the clustering (\code{hclust}) 
 
 \item{color}{what set of color panel to use, default is "-RdBu:100".}
 
-\item{extrainfo}{a string of extra information to saved in the final plot filename, default as "".}
+\item{extrainfo}{a string of extra information to 
+saved in the final plot filename, default as "".}
 
 \item{ncol}{the number of columns in the combined plots, default as 4.}
 
 \item{size}{the size of the cellwidth and cellheight in heatmap, default as 2.}
 }
 \value{
-heatmap plots showing immediately or pdf files saved to desinated directory.
+heatmap plots showing immediately or pdf 
+        files saved to desinated directory.
 }
 \description{
-Heatmap plot a set of gene correlation matrix of the same set of genes with proper annotations
+Heatmap plot a set of gene correlation matrix of 
+the same set of genes with proper annotations
 }
 \examples{
 data1 = matrix(rnorm(100),20,5)

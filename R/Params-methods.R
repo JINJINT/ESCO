@@ -1,7 +1,9 @@
+# This file contains all the objected orientated related definitions
+
+#====== Classes
 #' The Params virtual class
 #'
 #' Virtual S4 class that all other Params classes inherit from.
-#' (this function is an internal function from \code{\link[splatter]{splatter}}.)
 #' @section Parameters:
 #'
 #' The Params class defines the following parameters:
@@ -13,7 +15,6 @@
 #' }
 #'
 #' The parameters not shown in brackets can be estimated from real data.
-#' This function is borrowed from splatter.
 #' @name Params
 #' @rdname Params
 #' @aliases Params-class
@@ -279,13 +280,69 @@ setClass("escoParams",
                                trials = 1
          ))
 
+#========Generics=========#
+#' @rdname setParam
+setGeneric("setParam", function(object, name, value) {
+  standardGeneric("setParam")
+})
+
+#' @rdname setParams
+setGeneric("setParams", function(object, update = NULL, ...) {
+  standardGeneric("setParams")
+})
+
+#' @rdname getParam
+setGeneric("getParam", function(object, name) {
+  standardGeneric("getParam")
+  })
+
+#' @rdname getParams
+setGeneric("getParams", function(object, names) {
+  standardGeneric("getParams")
+})
+
+#' @rdname setParamUnchecked
+setGeneric("setParamUnchecked", function(object, name, value) {
+  standardGeneric("setParamUnchecked")
+})
+
+
+#' @rdname setParamsUnchecked
+setGeneric("setParamsUnchecked", function(object, update = NULL, ...) {
+  standardGeneric("setParamsUnchecked")
+})
+
+
+#' @rdname expandParams
+setGeneric("expandParams", function(object, vectors, n) {
+  standardGeneric("expandParams")
+})
+
+#======== Methods=========#
+#' Get a parameter
+#'
+#' Get a parameter value from a Params object.  
+#' This function is similar with that in \code{\link[splatter]{splatter}}.
+#' 
+#' @param object Params object to get values from.
+#' @param name vector of names of the parameters to get.
+#'
+#' @return List with the values of the selected parameters.
+#' @examples
+#' params <- newescoParams()
+#' getParam(params, c("nGenes"))
+#' @rdname getParam
+#' @export
+#' @importFrom methods slot
+setMethod("getParam", "Params", function(object, name) {
+  slot(object, name)
+})
 
 #' Get parameters
 #'
-#' Get multiple parameter values from a Params object 
-#' (this function is borrowed from \code{\link[splatter]{splatter}}).
-#'
-#' @param params Params object to get values from.
+#' Get multiple parameter values from a Params object. 
+#' This function is similar with that in \code{\link[splatter]{splatter}}.
+#' @param object Params object to get values from.
 #' @param names vector of names of the parameters to get.
 #'
 #' @return List with the values of the selected parameters.
@@ -293,74 +350,22 @@ setClass("escoParams",
 #' params <- newescoParams()
 #' getParams(params, c("nGenes", "nCells"))
 #' @rdname getParams
-getParams <- function(params, names) {
-  
-  checkmate::assertClass(params, classes = "Params")
+#' @export
+#' @importFrom methods slot
+setMethod("getParams", "Params", function(object, names) {
+  checkmate::assertClass(object, classes = "Params")
   checkmate::assertCharacter(names, min.len = 1, any.missing = FALSE)
-  
-  params.list <- lapply(names, getParam, object = params)
+  params.list <- lapply(names, getParam, object = object)
   names(params.list) <- names
-  
   return(params.list)
 }
-
-#' Set parameters UNCHECKED
-#'
-#' Set multiple parameters in a Params object 
-#' (this function is borrowed from \code{\link[splatter]{splatter}}).
-#'
-#' @param params Params object to set parameters in.
-#' @param update list of parameters to set where \code{names(update)} are the
-#'        names of the parameters to set and the items in the list are values.
-#' @param ... additional parameters to set. These are combined with any
-#'        parameters specified in \code{update}.
-#'
-#' @details
-#' Each parameter is set by a call to \code{\link{setParam}}. If the same
-#' parameter is specified multiple times it will be set multiple times.
-#' Parameters can be specified using a list via \code{update} (useful when
-#' collecting parameter values in some way) or individually (useful when setting
-#' them manually), see examples. THE FINAL OBJECT IS NOT CHECKED FOR VALIDITY!
-#'
-#' @return Params object with updated values.
-#' @rdname setParamsUnchecked
-setParamsUnchecked <- function(params, update = NULL, ...) {
-  
-  checkmate::assertClass(params, classes = "Params")
-  checkmate::assertList(update, null.ok = TRUE)
-  
-  update <- c(update, list(...))
-  
-  if (length(update) > 0) {
-    for (name in names(update)) {
-      value <- update[[name]]
-      params <- setParamUnchecked(params, name, value)
-    }
-  }
-  
-  return(params)
-}
-
-
-#' New Params
-#'
-#' Create a new Params object. Functions exist for each of the different
-#' Params subtypes.
-#'
-#' @param ... additional parameters passed to \code{\link{setParams}}.
-#'
-#' @return New Params object.
-#' @examples
-#' params <- newescoParams()
-#' params <- newescoParams(nGenes = 200, nCells = 10)
-#'
-#' @name newParams
-NULL
+)
 
 #' Set a parameter
 #'
-#' Function for setting parameter values. This function is borrowed from Splatter.
-#'
+#' Function for setting a parameter value. 
+#' This function is similar with that in \code{\link[splatter]{splatter}}.
+#' 
 #' @param object object to set parameter in.
 #' @param name name of the parameter to set.
 #' @param value value to set the parameter to.
@@ -373,49 +378,19 @@ NULL
 #' 
 #' @rdname setParam
 #' @export
-setGeneric("setParam", function(object, name, value) {
-  standardGeneric("setParam")
+#' @importFrom methods slot<- validObject
+setMethod("setParam", "Params", function(object, name, value) {
+  checkmate::assertString(name)
+  slot(object, name) <- value
+  validObject(object)
+  return(object)
 })
 
-#' Get a parameter
+#' Set mutiple parameters
 #'
-#' Accessor function for getting parameter values.
-#' This function is borrowed from Splatter.
-#' @param object object to get parameter from.
-#' @param name name of the parameter to get.
-#'
-#' @return The extracted parameter value
-#'
-#' @examples
-#' params <- newescoParams()
-#' getParam(params, "nGenes")
-#'
-#' @rdname getParam
-#' @export
-
-setGeneric("getParam", function(object, name) {standardGeneric("getParam")})
-
-
-#' Set a parameter UNCHECKED
-#'
-#' Function for setting parameter values. THE OUTPUT IS NOT CHECKED FOR
-#' VALIDITY! (This function is borrowed from Splatter).
-#'
-#' @param object object to set parameter in.
-#' @param name name of the parameter to set.
-#' @param value value to set the parameter to.
-#'
-#' @return Object with new parameter value.
-#'
-#' @rdname setParamUnchecked
-setGeneric("setParamUnchecked", function(object, name, value) {
-  standardGeneric("setParamUnchecked")
-})
-
-#' Set parameters
-#'
-#' Set multiple parameters in a Params object.  (This function is borrowed from Splatter).
-#'
+#' Function for setting multiple parameters value.  
+#' This function is similar with that in \code{\link[splatter]{splatter}}.
+#' 
 #' @param object Params object to set parameters in.
 #' @param update list of parameters to set where \code{names(update)} are the
 #'        names of the parameters to set and the items in the list are values.
@@ -443,49 +418,59 @@ setGeneric("setParamUnchecked", function(object, name, value) {
 #'
 #' @rdname setParams
 #' @export
-setGeneric("setParams", function(object, update = NULL, ...) {
-  standardGeneric("setParams")
-})
-
-
-# this function is borrowed from Splatter
-#' Expand parameters
-#' @rdname expandParams
-setGeneric("expandParams", function(object, ...) {
-  standardGeneric("expandParams")
-})
-
-
-
-# this function is borrowed from Splatter
-#' @rdname setParam
-#' @importFrom methods slot<- validObject
-setMethod("setParam", "Params", function(object, name, value) {
-  checkmate::assertString(name)
-  slot(object, name) <- value
-  validObject(object)
+setMethod("setParams", "Params", function(object, update = NULL, ...) {
+  checkmate::assertClass(object, classes = "Params")
+  checkmate::assertList(update, null.ok = TRUE)
+  update <- c(update, list(...))
+  if (length(update) > 0) {
+    for (name in names(update)) {
+      value <- update[[name]]
+      object <- setParam(object, name, value)
+    }
+  }
   return(object)
 })
 
-# this function is borrowed from Splatter
-#' @rdname getParam
-#' @importFrom methods slot
-setMethod("getParam", "Params", function(object, name) {
-  slot(object, name)
-})
 
-# this function is borrowed from Splatter
-#' @importFrom methods slot<-
+#' Set a parameter UNCHECKED
+#'
+#' Function for setting parameter values without checking for validity. 
+#' This function is similar with that in \code{\link[splatter]{splatter}}.
+#' 
+#' @param object object to set parameter in.
+#' @param name name of the parameter to set.
+#' @param value value to set the parameter to.
+#'
+#' @return Object with new parameter value.
 #' @rdname setParamUnchecked
+#' @importFrom methods slot<-
 setMethod("setParamUnchecked", "Params", function(object, name, value) {
   checkmate::assertString(name)
   slot(object, name) <- value
   return(object)
 })
 
-# this function is borrowed from Splatter
-#' @rdname setParam
-setMethod("setParams", "Params", function(object, update = NULL, ...) {
+#' Set parameters UNCHECKED
+#'
+#' Set multiple parameters in a Params object without checking for validity.
+#' This function is similar with that in \code{\link[splatter]{splatter}}.
+#' 
+#' @param object Params object to set parameters in.
+#' @param update list of parameters to set where \code{names(update)} are the
+#'        names of the parameters to set and the items in the list are values.
+#' @param ... additional parameters to set. These are combined with any
+#'        parameters specified in \code{update}.
+#'
+#' @details
+#' Each parameter is set by a call to \code{\link{setParam}}. If the same
+#' parameter is specified multiple times it will be set multiple times.
+#' Parameters can be specified using a list via \code{update} (useful when
+#' collecting parameter values in some way) or individually (useful when setting
+#' them manually), see examples. 
+#'
+#' @return Params object with updated values.
+#' @rdname setParamsUnchecked
+setMethod("setParamsUnchecked", "Params", function(object, update = NULL, ...) {
   
   checkmate::assertClass(object, classes = "Params")
   checkmate::assertList(update, null.ok = TRUE)
@@ -495,18 +480,32 @@ setMethod("setParams", "Params", function(object, update = NULL, ...) {
   if (length(update) > 0) {
     for (name in names(update)) {
       value <- update[[name]]
-      object <- setParam(object, name, value)
+      object <- setParamUnchecked(object, name, value)
     }
   }
-  
   return(object)
 })
 
-# this function is borrowed from Splatter
+#' Expand values of parameters 
+#'
+#' Expand the values of multiple parameters by repititions in a Params object.
+#' This function is similar with that in \code{\link[splatter]{splatter}}.
+#' 
+#' @param object Params object to set parameters in.
+#' @param vectors list of parameters to reset values,
+#'  where \code{names(update)} are the
+#'        names of the parameters to set and the items 
+#'        in the list are values.
+#' @param n an integer indicates the target number of repititions.
+#'
+#' @details
+#' Each parameter is set by a call to \code{\link{setParam}}. 
+#' If the same parameter is specified multiple times 
+#' it will be set multiple times.
+#'
 #' @return object with new parameters.
 #' @rdname expandParams
 setMethod("expandParams", "Params", function(object, vectors, n) {
-  
   update <- list()
   for (parameter in vectors) {
     value <- getParam(object, parameter)
@@ -514,11 +513,7 @@ setMethod("expandParams", "Params", function(object, vectors, n) {
       update[[parameter]] <- rep(value, n)
     }
   }
-  
   object <- setParamsUnchecked(object, update)
-  
   return(object)
 })
-
-
 

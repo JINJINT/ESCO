@@ -21,7 +21,8 @@ escoParams object with estimated values.
 The Shapiro-Wilks test is used to determine if the library sizes are
 normally distributed. If so a normal distribution is fitted to the library
 sizes, if not (most cases) a log-normal distribution is fitted and the
-estimated parameters are added to the params object. Specifically, for a cell group, the fitting
+estimated parameters are added to the params object. 
+Specifically, for a cell group, the fitting
 process uses only the cell samples within this cell group. See
 \code{\link[fitdistrplus]{fitdist}} for details on the fitting.
 }

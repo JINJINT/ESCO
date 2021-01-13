@@ -22,7 +22,8 @@ containing count data to estimate parameters from.}
 \item{dirname}{a tring of directory name to indicate where to save the results}
 
 \item{group}{whether the data is believed to be of discrete cell groups or not, 
-if yes, the corresponding cellinfo indicating the cell group labels need to be input as well}
+if yes, the corresponding cellinfo indicating the 
+cell group labels need to be input as well}
 
 \item{cellinfo}{a vector of length n, where n is the number of cells. 
 Each entries is the group identity of a cell.}

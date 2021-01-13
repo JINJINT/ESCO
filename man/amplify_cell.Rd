@@ -13,7 +13,8 @@ amplify_cell(true_counts_1cell, rate_2cap, gene_len, amp_bias, rate_2PCR,
 
 \item{rate_2cap}{the capture efficiency for this cell}
 
-\item{gene_len}{gene lengths for the genes/transcripts, sampled from real human transcript length}
+\item{gene_len}{gene lengths for the genes/transcripts, 
+sampled from real human transcript length}
 
 \item{amp_bias}{amplification bias for each gene, a vector of length ngenes}
 
@@ -23,9 +24,11 @@ amplify_cell(true_counts_1cell, rate_2cap, gene_len, amp_bias, rate_2PCR,
 
 \item{nPCR2}{the number of second PCR cycles}
 
-\item{LinearAmp}{if linear amplification is used for pre-amplification step, default is FALSE}
+\item{LinearAmp}{if linear amplification is used 
+for pre-amplification step, default is FALSE}
 
-\item{LinearAmp_coef}{the coeficient of linear amplification, that is, how many times each molecule is amplified by}
+\item{LinearAmp_coef}{the coeficient of linear amplification, 
+that is, how many times each molecule is amplified by}
 
 \item{N_molecules_SEQ}{number of molecules sent for sequencing; sequencing depth}
 }
@@ -37,6 +40,8 @@ Simulate amplification, library prep, and the sequencing processes.
 (This function is borrowed from SymSim).
 }
 \references{
-Zhang X, Xu C, Yosef N. Simulating multiple faceted variability in single cell RNA sequencing. 
-Nature communications. 2019 Jun 13;10(1):1-6. \url{https://www.nature.com/articles/s41467-019-10500-w}
+Zhang X, Xu C, Yosef N. Simulating multiple faceted 
+variability in single cell RNA sequencing. 
+Nature communications. 2019 Jun 13;10(1):1-6. 
+\url{https://www.nature.com/articles/s41467-019-10500-w}
 }

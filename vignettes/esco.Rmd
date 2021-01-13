@@ -115,7 +115,8 @@ heatdata(datalist, norm = FALSE, size = 2, ncol = 3)
 
 ```{r, warning = FALSE, fig.height = 4, fig.width = 10}
 # plotting the GCN
-rholist = metadata(sim)$Params@corr
+simparams = metadata(sim)$Params
+rholist = slot(simparams,"corr")
 corrgenes = rownames(rholist[[1]])
 gcnlist = lapply(datalist, function(data)gcn(data, genes = corrgenes))
 gcnlist = append(gcnlist, list("given truth" = rholist[[1]]), 0)
@@ -138,7 +139,8 @@ heatdata(datalist, norm = FALSE, size = 2, ncol = 3)
 
 ```{r, warning  = FALSE, fig.height = 3, fig.width = 10}
 # plotting the GCN
-rholist = metadata(sim)$Params@corr
+simparams = metadata(sim)$Params
+rholist = slot(simparams,"corr")
 corrgenes = rownames(rholist[[1]])
 gcnlist = lapply(datalist, function(data)gcn(data, genes = corrgenes))
 gcnlist = append(gcnlist, list("given truth" = rholist[[1]]), 0)
@@ -191,7 +193,8 @@ heatgcn(degcnlist, geneinfo = degeneinfo, size = 2, ncol = 3)
 
 ```{r, warning = FALSE, fig.height = 4, fig.width = 10}
 # plot GCN for marker gene within one cell group
-rholist = metadata(sim)$Params@corr
+simparams = metadata(sim)$Params
+rholist = slot(simparams,"corr")
 group2_gcnlist = lapply(datalist, 
                         function(data){
                           gcn(data[,which(colData(sim)$Group=="Group2")], 
@@ -303,7 +306,9 @@ celltime = data.frame(path = as.numeric(colData(sim)$Path),
 celltime = order(celltime[,1], celltime[,2])
 
 # get the geneinfo
-degenes = which(metadata(sim)$Params@paths.DEgenes==1)
+params = metadata(sim)$Params
+pathde = slot(params, "paths.DEgenes")
+degenes = which(pathde==1)
 
 # plot the data
 heatdata(list("simulated truth" = datatrue[degenes,]),
@@ -313,7 +318,7 @@ heatdata(list("simulated truth" = datatrue[degenes,]),
 
 # Sessioninfo
 ```{r, warning  = FALSE}
-unlink("show", recursive=TRUE)
+unlink("case", recursive=TRUE)
 sessionInfo()
 ```
 [gamma]: https://en.wikipedia.org/wiki/Gamma_distribution
