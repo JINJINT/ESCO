@@ -1,12 +1,10 @@
 # ESCO
 
 Welcome to ``ESCO``! ``ESCO`` is an R package for the simulation of
-single-cell RNA sequencing data with special consideration of gene co-expression, built ultilizing the infrastructure the [`splatter`](https://github.com/Oshlack/splatter) package. This package formerly known as `SplatterESCO`.
+single-cell RNA sequencing data with special consideration of gene co-expression, built ultilizing the infrastructure in the [`splatter`](https://github.com/Oshlack/splatter) package. 
 
 ## Install from Github
-This package can be installed with R package devtools. First, pull the package with git clone to your working directory. Make sure that you have installed the packages listed in the DESCRIPTION file. 
-
-To install ESCO, run:
+This package can be installed with R package devtools:
 ```{r}
 library("devtools")
 devtools::install_github("JINJINT/ESCO")
@@ -16,20 +14,22 @@ devtools::install_github("JINJINT/ESCO")
 
 For a simple example to simulate 100 genes and 50 cells of one cell group with gene co-expression:
 ```{r}
-# start simulation
+library(ESCO)
+
+#===== start simulation ======#
 sim <- escoSimulateSingle(nGenes = 100, nCells = 50, 
                           withcorr = TRUE,
                           verbose = FALSE)
 
-#===== access the data
+#===== access the data ======#
 datalist = list("simulated truth"=assays(sim)$TrueCounts,
                 "zero-inflated" = assays(sim)$counts, 
                 "down-sampled" = assays(sim)$observedcounts)
 
-#====== plotting the data
+#====== plot the data ======#
 heatdata(datalist, norm = FALSE, size = 2, ncol = 3)
 
-#====== plotting the Gene correlation
+#====== plot the Gene correlation ======#
 # object that saved all simulation configurations
 simparams = metadata(sim)$Params 
 
