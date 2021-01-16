@@ -21,7 +21,7 @@ knitr::opts_chunk$set(fig.align = 'center',
 # Use exact BSPARAM to avoid warnings
 options(BiocSingularParam.default=BiocSingular::ExactParam())
 library(ESCO)
-showdir = "~/ESCO/vignettes/show/"
+showdir = "./show/"
 if(!dir.exists(showdir))dir.create(showdir)
 ```
 
@@ -318,7 +318,7 @@ heatdata(list("simulated truth" = datatrue[degenes,]),
 
 # Sessioninfo
 ```{r, warning  = FALSE}
-unlink("case", recursive=TRUE)
+unlink("./show", recursive=TRUE)
 sessionInfo()
 ```
 [gamma]: https://en.wikipedia.org/wiki/Gamma_distribution
