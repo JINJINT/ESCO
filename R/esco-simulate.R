@@ -413,7 +413,7 @@ escoSimGeneMeans <- function(sim, verbose) {
     batch.means.cell <- matrix(1, ncol = nCells, nrow = nGenes)*means.gene
     colnames(batch.means.cell) <- cell.names
     rownames(batch.means.cell) <- gene.names
-    assays(sim)$Means <- batch.means.cell
+    assays(sim,withDimnames = FALSE)$Means <- batch.means.cell
     
     metadata(sim)$Params = params
     
@@ -715,7 +715,7 @@ escoSimSingleCellMeans <- function(sim, verbose) {
     cell.names <- colData(sim)$Cell
     gene.names <- rowData(sim)$Gene
     exp.lib.sizes <- colData(sim)$ExpLibSize
-    batch.means.cell <- assays(sim)$Means
+    batch.means.cell <- assays(sim,withDimnames = FALSE)$Means
 
     cell.means.gene <- batch.means.cell
     cell.props.gene <- t(t(cell.means.gene)/colSums(cell.means.gene))
@@ -724,7 +724,7 @@ escoSimSingleCellMeans <- function(sim, verbose) {
     
     colnames(base.means.cell) <- cell.names
     rownames(base.means.cell) <- gene.names
-    assays(sim)$BaseCellMeans <- base.means.cell
+    assays(sim,withDimnames = FALSE)$BaseCellMeans <- base.means.cell
     
     metadata(sim)$Params = params
     return(sim)
@@ -758,7 +758,7 @@ escoSimGroupCellMeans <- function(sim, verbose) {
     group.names <- sort(unique(groups))
     lib.loc <- getParam(params, "lib.loc")
     exp.lib.sizes <- colData(sim)$ExpLibSize
-    batch.means.cell <- assays(sim)$Means
+    batch.means.cell <- assays(sim,withDimnames = FALSE)$Means
 
     group.facs.gene <- rowData(sim)[, paste0("DEFac", group.names)]
     DEgene.name = gene.names[which(rowData(sim)$DEgenes==1)]
@@ -770,7 +770,7 @@ escoSimGroupCellMeans <- function(sim, verbose) {
     
     colnames(base.means.cell) <- cell.names
     rownames(base.means.cell) <- gene.names
-    assays(sim)$BaseCellMeans <- base.means.cell
+    assays(sim,withDimnames = FALSE)$BaseCellMeans <- base.means.cell
     
     metadata(sim)$Params = params
     return(sim)
@@ -804,7 +804,7 @@ escoSimTreeCellMeans <- function(sim, verbose) {
   groups <- colData(sim)$Group
   group.names <- sort(unique(groups))
   exp.lib.sizes <- colData(sim)$ExpLibSize
-  batch.means.cell <- assays(sim)$Means
+  batch.means.cell <- assays(sim,withDimnames = FALSE)$Means
   group.facs.gene <- rowData(sim)[, paste0("DEFac", group.names)]
   DEgene.name = gene.names[which(rowData(sim)$DEgenes==1)]
   cell.facs.gene <- as.matrix(group.facs.gene[, paste0("DEFac", groups)])
@@ -830,7 +830,7 @@ escoSimTreeCellMeans <- function(sim, verbose) {
   
   colnames(base.means.cell) <- cell.names
   rownames(base.means.cell) <- gene.names
-  assays(sim)$BaseCellMeans <- base.means.cell
+  assays(sim,withDimnames = FALSE)$BaseCellMeans <- base.means.cell
   
   metadata(sim)$Params = params
   return(sim)
@@ -915,7 +915,7 @@ escoSimTrajCellMeans <- function(sim, verbose) {
 
   colnames(basecells.means) <- cell.names
   rownames(basecells.means) <- gene.names
-  assays(sim)$BaseCellMeans <- basecells.means
+  assays(sim,withDimnames = FALSE)$BaseCellMeans <- basecells.means
   
   colData(sim)$Path = cells.paths
   colData(sim)$Step = cells.steps  
@@ -959,7 +959,7 @@ escoSimTrueCounts <- function(sim, type, verbose, numCores = 2) {
     nCells <- getParam(params, "nCells")
     bcv.common <- getParam(params, "bcv.common")
     bcv.df <- getParam(params, "bcv.df")
-    basecell.means <- assays(sim)$BaseCellMeans
+    basecell.means <- assays(sim,withDimnames = FALSE)$BaseCellMeans
     basecell.means <- as.matrix(basecell.means)
     dirname <- getParam(params, "dirname")
 
@@ -1138,8 +1138,8 @@ escoSimTrueCounts <- function(sim, type, verbose, numCores = 2) {
           "% Inf true count value, modifying it to max + 10....\n")
     }
     true.count[true.count==Inf] = max(true.count[true.count!=Inf]) + 10
-    assays(sim)$TrueCounts <- true.count
-    assays(sim)$CellMeans <- cell.means
+    assays(sim,withDimnames = FALSE)$TrueCounts <- true.count
+    assays(sim,withDimnames = FALSE)$CellMeans <- cell.means
     
     metadata(sim)$Params = params
     return(sim)
@@ -1165,7 +1165,7 @@ escoSimTrueCounts <- function(sim, type, verbose, numCores = 2) {
 escoSimZeroInflate <- function(sim, trial, verbose) {
     params <- metadata(sim)$Params
     dirname <- getParam(params, "dirname")
-    true.counts <- assays(sim)$TrueCounts
+    true.counts <- assays(sim,withDimnames = FALSE)$TrueCounts
    
     dropout.mid <- getParam(params, "dropout.mid")
     dropout.shape <- getParam(params, "dropout.shape")
@@ -1182,8 +1182,8 @@ escoSimZeroInflate <- function(sim, trial, verbose) {
     withcorr <- getParam(params, "withcorr")
     genemeans <- rowData(sim)$GeneMean
     
-    if(withcorr)cell.means <- assays(sim)$CellMeans
-    else cell.means <- assays(sim)$BaseCellMeans
+    if(withcorr)cell.means <- assays(sim,withDimnames = FALSE)$CellMeans
+    else cell.means <- assays(sim,withDimnames = FALSE)$BaseCellMeans
     
     cell.normmeans=median(colSums(cell.means))*t(t(cell.means)/colSums(cell.means))
       
@@ -1225,8 +1225,8 @@ escoSimZeroInflate <- function(sim, trial, verbose) {
       colnames(keep) <- cell.names
       rownames(keep) <- gene.names
         
-      assays(sim)$DropProb <- drop.prob
-      assays(sim)$Dropout <- !keep
+      assays(sim,withDimnames = FALSE)$DropProb <- drop.prob
+      assays(sim,withDimnames = FALSE)$Dropout <- !keep
         
       
       if(dir.exists(dirname)){
@@ -1238,7 +1238,7 @@ escoSimZeroInflate <- function(sim, trial, verbose) {
       }
     }
     
-    assays(sim)$counts = counts
+    assays(sim,withDimnames = FALSE)$counts = counts
     return(sim)
 }
 
@@ -1271,7 +1271,7 @@ escoSimZeroInflate <- function(sim, trial, verbose) {
 escoSimDownSample <- function(sim, trial, verbose, numCores =2, nbatch=1){
   params <-metadata(sim)$Params
   dirname <- getParam(params, "dirname")
-  true_counts = assays(sim)$TrueCounts
+  true_counts = assays(sim,withDimnames = FALSE)$TrueCounts
   nGenes <- getParam(params, "nGenes")
   data(gene_len_pool)
   gene_len <- sample(gene_len_pool, nGenes, replace = FALSE)
@@ -1363,7 +1363,7 @@ escoSimDownSample <- function(sim, trial, verbose, numCores =2, nbatch=1){
       }
     }
   }
-  assays(sim)$observedcounts = observed_counts
+  assays(sim,withDimnames = FALSE)$observedcounts = observed_counts
   return(sim)
   }
 
