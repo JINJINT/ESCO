@@ -40,7 +40,7 @@ is done.
 }
 \examples{
 # Load example data
-data = matrix(rpois(2000*40,20),2000,40)
+data = matrix(rpois(2000*40,2),2000,40)
 params <- escoEstimate(data)
 params
 }
