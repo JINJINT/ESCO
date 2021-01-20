@@ -1,7 +1,7 @@
 Package: ESCO
 Type: Package
 Title: Simple Simulation of Single-cell RNA Sequencing Data
-Version: 0.99.9
+Version: 0.99.10
 Date: 2021-1-19
 Authors@R:
     c(person("Jinjin", "Tian", role = c("aut", "cre"),
@@ -14,7 +14,7 @@ Description: This package borrowed the infrastructure from package splatter, whi
     estimated from real data and functions are provided for comparing and visualizing real and simulated datasets. 
 License: GPL-3 + file LICENSE
 Depends:
-    R (>= 3.6),
+    R (>= 4.1),
     SingleCellExperiment,
     splatter
 Imports:
