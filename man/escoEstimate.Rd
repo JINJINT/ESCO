@@ -40,10 +40,8 @@ is done.
 }
 \examples{
 # Load example data
-library(scater)
-data("sc_example_counts")
-
-params <- escoEstimate(sc_example_counts)
+data = matrix(rpois(2000*40),2000,40)
+params <- escoEstimate(data)
 params
 }
 \seealso{

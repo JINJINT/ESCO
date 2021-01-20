@@ -171,8 +171,8 @@ geneinfo = data.frame(genes = rowData(sim)$Gene,
                       newcelltype = as.factor(genegroup))
 
 # organize the cell info
-cellinfo = data.frame(çells = colData(sim)$Cell, 
-                       newcelltype= as.factor(colData(sim)$Group))
+cellinfo = data.frame(cells = colData(sim)$Cell,
+                    newcelltype=as.factor(colData(sim)$Group))
 
 # get the data
 datalist = list("simulated truth" = assays(sim)$TrueCounts, 
