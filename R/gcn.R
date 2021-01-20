@@ -52,20 +52,18 @@ cosine<-function(DF){
 #'        where the first is taken as the truth, and the rest are all estimations.
 #' @param method a vector of error measure names, possible choices are 
 #'        mean square error "MSE", Spectral norm "Spectral", infinite norm "Inf", 
-#'        l1 norm, "L1", Adjusted rand index \code{\link{adjustedRand}} with 
-#'        \code{clusk} numbers of clusters "ARI", Jaccard index with 
-#'        \code{clusk} numbers of clusters "Jaccard".
-#' @param clustk the number of clusters used in "ARI" 
-#'        and "Jaccard" error measure. Default is 9.
-#' @param clustmethod what clustering method to use. 
-#'        Possible choices are hirarchical clustering "hclust" \code{\link{hclust}}, 
-#'        and "kmeans" \code{\link{kmeans}}. Default is "hclust".
+#'        l1 norm, "L1"
+# #' @param clustk the number of clusters used in "ARI" 
+# #'        and "Jaccard" error measure. Default is 9.
+# #' @param clustmethod what clustering method to use. 
+# #'        Possible choices are hirarchical clustering "hclust" \code{\link{hclust}}, 
+# #'        and "kmeans" \code{\link{kmeans}}. Default is "hclust".
 #' @return a matrix of error levels, where each row 
 #'         indicates the given different estimation of gcn, 
 #'         and each column indicates different error measure.
 #' @rdname escogcnerr
 #' @importFrom stats as.dist hclust
-#' @importFrom clues adjustedRand
+# #' @importFrom clues adjustedRand
 #' @examples 
 #' data1 = matrix(rnorm(100),20,5)
 #' data2 = matrix(rnorm(100),20,5)
@@ -74,9 +72,7 @@ cosine<-function(DF){
 #' @export
 gcn_error<-function(gcnlist, 
                     method = c("MSE", "Spectral", 
-                               "Inf", "L1", 
-                               "ARI", "Jaccard"),
-                    clustk = 9, clustmethod = "hclust"){
+                               "Inf", "L1")){
   gcn_true = gcnlist[[1]]
   gcn_true[is.na(gcn_true)] = 0
   gcnerror = c()
@@ -98,27 +94,27 @@ gcn_error<-function(gcnlist,
     if(method=="L1")
       gcn_error = norm(gcn_diff, type = "O")
     
-    if(method %in% c("ARI", "Jaccard")){
-      if(clustmethod == "hclust"){
-        d_true = as.dist((1-gcn_true)/2)
-        h_true = hclust(d_true)
-        memb_true <- cutree(h_true, k = clustk)
-        d = as.dist((1-gcn)/2)
-        h = hclust(d)
-        memb <- cutree(h, k = clustk)
-      }
-      if(clustmethod == "kmeans"){
-        memb_true <- kmeans(gcn_true, clustk)$clust
-        memb <- kmeans(gcn, clustk)$clust
-      }
-      true_clust = memb_true
-      clust = memb
-      if(method=="ARI")
-        gcn_error =  adjustedRand(clust, true_clust)[2]
-      
-      if(method=="Jaccard")
-        gcn_error =  adjustedRand(clust, true_clust)[5]
-    }
+    # if(method %in% c("ARI", "Jaccard")){
+    #   if(clustmethod == "hclust"){
+    #     d_true = as.dist((1-gcn_true)/2)
+    #     h_true = hclust(d_true)
+    #     memb_true <- cutree(h_true, k = clustk)
+    #     d = as.dist((1-gcn)/2)
+    #     h = hclust(d)
+    #     memb <- cutree(h, k = clustk)
+    #   }
+    #   if(clustmethod == "kmeans"){
+    #     memb_true <- kmeans(gcn_true, clustk)$clust
+    #     memb <- kmeans(gcn, clustk)$clust
+    #   }
+    #   true_clust = memb_true
+    #   clust = memb
+    #   if(method=="ARI")
+    #     gcn_error =  adjustedRand(clust, true_clust)[2]
+    #   
+    #   if(method=="Jaccard")
+    #     gcn_error =  adjustedRand(clust, true_clust)[5]
+    # }
     gcnerror[i-1] = gcn_error
   }
   return(gcnerror)

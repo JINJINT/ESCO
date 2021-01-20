@@ -34,7 +34,7 @@ escoSimulateTraj(params = newescoParams(), verbose = TRUE, ...)
 If set as NULL, then all the detected cores are used.}
 
 \item{...}{any additional parameter settings to override what is provided in
-\code{\link{params}}.}
+\code{\link{escoParams}}.}
 }
 \value{
 SingleCellExperiment object containing the simulated counts and
@@ -48,7 +48,7 @@ a hierarchical copula model.
 Parameters can be set in a variety of ways. If no parameters are provided
 the default parameters are used. We adopts the way in \code{\link[splatter]{splatter}}
 to set up parameters, particularly, 
-any parameters in \code{\link{params}} can be
+any parameters in \code{\link{escoParams}} can be
 overridden by supplying additional arguments through a call to
 \code{\link{setParams}}. This design allows the user flexibility in
 how they supply parameters and allows small adjustments without creating a

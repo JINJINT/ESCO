@@ -11,10 +11,10 @@ escoEstLib(counts, norm.counts, params)
 
 \item{norm.counts}{library size normalised counts matrix.}
 
-\item{params}{escoParams object to store estimated values in.}
+\item{params}{\code{escoParams} object to store estimated values in.}
 }
 \value{
-escoParams object with estimated values.
+\code{escoParams} object with estimated values.
 }
 \description{
 The Shapiro-Wilks test is used to determine if the library sizes are

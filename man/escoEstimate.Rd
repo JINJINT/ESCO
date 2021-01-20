@@ -28,10 +28,10 @@ cell group labels need to be input as well}
 \item{cellinfo}{a vector of length n, where n is the number of cells. 
 Each entries is the group identity of a cell.}
 
-\item{params}{escoParams object to store estimated values in.}
+\item{params}{\code{escoParams} object to store estimated values in.}
 }
 \value{
-escoParams object containing the estimated parameters.
+\code{escoParams} object containing the estimated parameters.
 }
 \description{
 Estimate simulation parameters for the esco simulation from a real

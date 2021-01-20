@@ -11,14 +11,14 @@ escoEstBCV(counts, norm.counts, params, cellinfo = NULL)
 
 \item{norm.counts}{normalized counts matrix to estimate parameters from.}
 
-\item{params}{escoParams object to store estimated values in.}
+\item{params}{\code{escoParams} object to store estimated values in.}
 
 \item{cellinfo}{info about the identity of each cell in the cell structure.
 If cellinfo is not null, then BCV is 
 estiamted adjusted to the cell structures}
 }
 \value{
-escoParams object with estimated values.
+\code{escoParams} object with estimated values.
 }
 \description{
 Parameters are estimated using the \code{\link[edgeR]{estimateDisp}} function

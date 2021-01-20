@@ -12,7 +12,7 @@
 #'        cell group labels need to be input as well
 #' @param cellinfo a vector of length n, where n is the number of cells. 
 #'        Each entries is the group identity of a cell.
-#' @param params escoParams object to store estimated values in.
+#' @param params \code{escoParams} object to store estimated values in.
 #'
 #' @seealso
 #' \code{\link{escoEstMean}},  \code{\link{escoEstLib}},
@@ -21,7 +21,7 @@
 #' \code{\link{escoEstGroupMean}}, \code{\link{escoEstGroupLib}},
 #' \code{\link{escoEstGroupOutlier}}
 #'
-#' @return escoParams object containing the estimated parameters.
+#' @return \code{escoParams} object containing the estimated parameters.
 #'
 #' @examples
 #' # Load example data
@@ -160,9 +160,9 @@ escoEstimate.matrix <- function(counts, dirname, group = FALSE,
 #'
 #' @param counts counts matrix to estimate parameters from.
 #' @param norm.counts library size normalised counts matrix.
-#' @param params escoParams object to store estimated values in.
+#' @param params \code{escoParams} object to store estimated values in.
 #'
-#' @return escoParams object with estimated values.
+#' @return \code{escoParams} object with estimated values.
 #' @rdname escoEstLib
 #' @importFrom stats shapiro.test
 #' @importFrom splatter setParams setParam getParams getParam
@@ -241,7 +241,7 @@ escoEstLib <- function(counts, norm.counts, params) {
 #'
 #' @param normcounts library size normalised counts matrix.
 #' @param counts counts matrix to estimate parameters from.
-#' @param params escoParams object to store estimated values in.
+#' @param params \code{escoParams} object to store estimated values in.
 #'
 #' @details
 #' Parameter for the gamma distribution are estimated by fitting the mean
@@ -254,7 +254,7 @@ escoEstLib <- function(counts, norm.counts, params) {
 #' @import DescTools
 #' @importFrom splatter setParams setParam getParams getParam
 #' @rdname escoEstMean
-#' @return escoParams object with estimated values.
+#' @return \code{escoParams} object with estimated values.
 escoEstMean <- function(normcounts, counts, params) {
   
   means <- rowMeans(normcounts)
@@ -301,7 +301,7 @@ escoEstMean <- function(normcounts, counts, params) {
 #' median mean expression level.
 #'
 #' @param norm.counts library size normalised counts matrix.
-#' @param params escoParams object to store estimated values in.
+#' @param params \code{escoParams} object to store estimated values in.
 #'
 #' @details
 #' Expression outlier genes are detected using the Median Absolute Deviation
@@ -313,7 +313,7 @@ escoEstMean <- function(normcounts, counts, params) {
 #' fitted to these factors in order to estimate the outlier factor location and
 #' scale parameters using \code{\link[fitdistrplus]{fitdist}}.
 #' @rdname escoEstOutlier
-#' @return escoParams object with estimated values.
+#' @return \code{escoParams} object with estimated values.
 #' @importFrom splatter setParams setParam getParams getParam
 escoEstOutlier <- function(norm.counts, params) {
   
@@ -350,7 +350,7 @@ escoEstOutlier <- function(norm.counts, params) {
 #'
 #' @param counts counts matrix to estimate parameters from.
 #' @param norm.counts normalized counts matrix to estimate parameters from.
-#' @param params escoParams object to store estimated values in.
+#' @param params \code{escoParams} object to store estimated values in.
 #' @param cellinfo info about the identity of each cell in the cell structure.
 #'        If cellinfo is not null, then BCV is 
 #'        estiamted adjusted to the cell structures 
@@ -362,7 +362,7 @@ escoEstOutlier <- function(norm.counts, params) {
 #' underlying common dispersion and the \code{edgR} estimate, therefore we
 #' apply a small correction, \code{disp = 0.1 + 0.25 * edgeR.disp}.
 #' @rdname escoEstBCV
-#' @return escoParams object with estimated values.
+#' @return \code{escoParams} object with estimated values.
 #' @importFrom splatter setParams setParam getParams getParam
 escoEstBCV <- function(counts, norm.counts, params, cellinfo = NULL){
   if(is.null(cellinfo)){
@@ -407,7 +407,7 @@ escoEstBCV <- function(counts, norm.counts, params, cellinfo = NULL){
 #' when simulating dropout.
 #'
 #' @param norm.counts library size normalised counts matrix.
-#' @param params escoParams object to store estimated values in.
+#' @param params \code{escoParams} object to store estimated values in.
 #'
 #' @details
 #' Logistic function parameters are estimated 
@@ -418,7 +418,7 @@ escoEstBCV <- function(counts, norm.counts, params, cellinfo = NULL){
 #' for details of fitting.
 #' Note this is done on the experiment level.
 #'
-#' @return escoParams object with estimated values.
+#' @return \code{escoParams} object with estimated values.
 #' @rdname escoEstDropout
 #' @importFrom stats dnbinom nls
 #' @importFrom splatter setParams setParam getParams getParam
@@ -463,7 +463,7 @@ escoEstDropout <- function(norm.counts, params) {
 #'        corresponding cell group the degenes marks.
 #' @param cellinfo a vector of length n, where n is the number of cells. 
 #'        Each entries is the group identity of a cell.
-#' @param params escoParams object to store estimated values in.
+#' @param params \code{escoParams} object to store estimated values in.
 #' 
 #' @details
 #' Parameter for the gamma distribution are estimated by fitting the mean
@@ -476,7 +476,7 @@ escoEstDropout <- function(norm.counts, params) {
 #' winsorized by setting the top and bottom 10 percent of values to the 10th
 #' and 90th percentiles.
 #' @rdname escoEstGroupMean
-#' @return escoParams object with estimated values.
+#' @return \code{escoParams} object with estimated values.
 #' @importFrom splatter setParams setParam getParams getParam
 escoEstGroupMean <- function(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params) {
     
@@ -520,9 +520,9 @@ escoEstGroupMean <- function(nonDE.normcounts, DE.normcounts, degenes, cellinfo,
 #' @param counts counts matrix to estimate parameters from.
 #' @param cellinfo a vector of length n, where n is the number of cells. 
 #'        Each entries is the group identity of a cell.
-#' @param params escoParams object to store estimated values in.
+#' @param params \code{escoParams} object to store estimated values in.
 #' 
-#' @return escoParams object with estimated values.
+#' @return \code{escoParams} object with estimated values.
 #' @rdname escoEstGroupLib
 #' @importFrom stats shapiro.test
 #' @importFrom splatter setParams setParam getParams getParam
@@ -608,7 +608,7 @@ escoEstGroupLib <- function(counts, cellinfo = NULL, params) {
 #'        corresponding cell group the degenes marks.
 #' @param cellinfo a vector of length n, where n is the number of cells. 
 #'        Each entries is the group identity of a cell.
-#' @param params escoParams object to store estimated values in.
+#' @param params \code{escoParams} object to store estimated values in.
 #' @rdname escoEstDE
 #' @details
 #' Expression DE factor are detected using the Median Absolute Deviation
@@ -620,7 +620,7 @@ escoEstGroupLib <- function(counts, cellinfo = NULL, params) {
 #' fitted to these factors in order to estimate the outlier factor location and
 #' scale parameters using \code{\link[fitdistrplus]{fitdist}}.
 #'
-#' @return escoParams object with estimated values.
+#' @return \code{escoParams} object with estimated values.
 #' @importFrom splatter setParams setParam getParams getParam
 escoEstDE <- function(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params) {
   de.rank = list()
@@ -678,7 +678,7 @@ escoEstDE <- function(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params
 #'        corresponding cell group the degenes marks.
 #' @param cellinfo a vector of length n, where n is the number of cells. 
 #'        Each entries is the group identity of a cell.
-#' @param params escoParams object to store estimated values in.
+#' @param params \code{escoParams} object to store estimated values in.
 #' @rdname escoEstGroupOutlier
 #' @details
 #' Expression outlier genes are detected using the Median Absolute Deviation
@@ -692,7 +692,7 @@ escoEstDE <- function(nonDE.normcounts, DE.normcounts, degenes, cellinfo, params
 #' fitted to these factors in order to estimate the outlier factor location and
 #' scale parameters using \code{\link[fitdistrplus]{fitdist}}.
 #'
-#' @return escoParams object with estimated values.
+#' @return \code{escoParams} object with estimated values.
 escoEstGroupOutlier <- function(nonDE.normcounts, DE.normcounts, 
                                 degenes, cellinfo, params) {
     means <- rowMeans(nonDE.normcounts)
