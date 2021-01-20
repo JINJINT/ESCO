@@ -4,7 +4,7 @@
 \alias{gcn_error}
 \title{Compute the estiamtion error of gene co-expression networks}
 \usage{
-gcn_error(gcnlist, method = c("MSE", "Spectral", "Inf", "L1"))
+gcn_error(gcnlist, method = c("MSE"))
 }
 \arguments{
 \item{gcnlist}{a list of gene coexpression networks of the same set of genes, 

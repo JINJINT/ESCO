@@ -71,8 +71,7 @@ cosine<-function(DF){
 #' gcnerr = gcn_error(gcnlist)
 #' @export
 gcn_error<-function(gcnlist, 
-                    method = c("MSE", "Spectral", 
-                               "Inf", "L1")){
+                    method = c("MSE")){
   gcn_true = gcnlist[[1]]
   gcn_true[is.na(gcn_true)] = 0
   gcnerror = c()
