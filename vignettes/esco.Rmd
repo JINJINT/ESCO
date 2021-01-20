@@ -53,8 +53,8 @@ parameters the defaults will be used:
 sim <- escoSimulate(nGenes = 100, nCells  = 50)
 sim
 # Access the counts
-data = assays(sim)$TrueCounts
-data[1:5, 1:5]
+#data = assays(sim)$TrueCounts
+#data[1:5, 1:5]
 # Information about genes
 head(rowData(sim))
 # Information about cells
