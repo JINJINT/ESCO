@@ -11,7 +11,7 @@ vignette: >
   \usepackage[utf8]{inputenc}
 ---
 
-```{r knitr-options, echo = FALSE, message = FALSE, warning = FALSE, eval = FALSE}
+```{r knitr-options, echo = FALSE, message = FALSE, warning = FALSE}
 # To render an HTML version that works nicely with github and web pages, do:
 # rmarkdown::render("vignettes/escoter.Rmd", "all")
 knitr::opts_chunk$set(fig.align = 'center', 
@@ -49,7 +49,7 @@ to simulate counts. If we want to make small adjustments to the parameters we
 can provide them as additional arguments, alternatively if we don't supply any
 parameters the defaults will be used:
 
-```{r escoSimulate, warning = FALSE, eval = FALSE}
+```{r escoSimulate, warning = FALSE}
 sim <- escoSimulate(nGenes = 100, nCells  = 50)
 sim
 # Access the counts
@@ -74,7 +74,7 @@ For more details about the `SingleCellExperiment` object refer to the [vignette]
 
 Additionally, in order to have better reproducibility, ESCO also allows multiple trials of noisy data generated from one common true counts in one single call, and save them seperately in the directory user provided. The returned ``sim`` on the other hand will only contain one trial of noisy data in order to avoid memory exhuastion.
 
-```{r escoSimulate1, warning = FALSE, eval = FALSE}
+```{r escoSimulate1, warning = FALSE}
 if(!dir.exists(paste0(showdir,"case1")))
   dir.create(paste0(showdir,"case1"))
 sim <- escoSimulate(nGenes = 100, nCells  = 50, 
@@ -86,7 +86,7 @@ list.files(path = paste0(showdir,"case1/"), full.names = FALSE)
 
 Moreover, ESCO also allows noisy data of different configuration of noise level data generated from one common true counts in one single call, and save them seperately in the directory user provided. The returned ``sim`` on the other hand will only contain one configuration of noisy data in order to avoid memory exhuastion.
 
-```{r escoSimulate2, warning = FALSE, eval = FALSE}
+```{r escoSimulate2, warning = FALSE}
 if(!dir.exists(paste0(showdir,"case2")))dir.create(paste0(showdir,"case2"))
 sim <- escoSimulate(nGenes = 100, nCells  = 50, 
                     dropout.mid = c(1,2), 
@@ -101,7 +101,7 @@ list.files(path = paste0(showdir,"case2/"), full.names = FALSE)
 ## Simulating one cell group
 In this section, we will show specific examples of how to simulate one homogenrous cell with/ without gene co-expression group using ESCO. Fisrtly, we show exmaple of simulation without gene co-expression, where ``heatdata`` and ``heatgcn`` are newly added functions for convinient visualization. 
 
-```{r simulate single random corr, warning = FALSE, fig.height = 4, fig.width = 10, eval = FALSE}
+```{r simulate single random corr, warning = FALSE, fig.height = 4, fig.width = 10}
 sim <- escoSimulateSingle(nGenes = 100, nCells = 50, 
                           lib.loc = 7, withcorr = TRUE, verbose = FALSE)
 
@@ -114,7 +114,7 @@ datalist = list("simulated truth" = assays(sim)$TrueCounts,
 heatdata(datalist, norm = FALSE, size = 2, ncol = 3)
 ```
 
-```{r, warning = FALSE, fig.height = 4, fig.width = 10, eval = FALSE}
+```{r, warning = FALSE, fig.height = 4, fig.width = 10}
 # plotting the GCN
 simparams = metadata(sim)$Params
 rholist = slot(simparams,"corr")
@@ -126,7 +126,7 @@ heatgcn(gcnlist, size = 3, ncol = 4)
 
 You can also provide your own defined GCN. In the following, we take the randomly generated correlation structure in the last simulation as our input.
 
-```{r simulate single given corr, warning = FALSE, fig.height = 4, fig.width = 10, eval = FALSE}
+```{r simulate single given corr, warning = FALSE, fig.height = 4, fig.width = 10}
 sim <- escoSimulateSingle(nGenes = 100, nCells = 50, 
                           lib.loc = 7, withcorr = TRUE, 
                           corr = rholist, verbose = FALSE)
@@ -138,7 +138,7 @@ datalist = list("simulated truth" = assays(sim)$TrueCounts,
 heatdata(datalist, norm = FALSE, size = 2, ncol = 3)
 ```
 
-```{r, warning  = FALSE, fig.height = 3, fig.width = 10, eval = FALSE}
+```{r, warning  = FALSE, fig.height = 3, fig.width = 10}
 # plotting the GCN
 simparams = metadata(sim)$Params
 rholist = slot(simparams,"corr")
@@ -157,7 +157,7 @@ cell types are present or what differences there are between them. ESCO is
 able to simulate these situations by changing the `method` argument. Here we are
 going to simulate two groups, by specifying the `group.prob`, ``de.prob`` parameters. The gene-gene correlation can be generated randomly (by default), or given by users.
 
-```{r groups, warning = FALSE, fig.height = 6, fig.width = 10, eval = FALSE}
+```{r groups, warning = FALSE, fig.height = 6, fig.width = 10}
 sim<-escoSimulateGroups(nGenes = 200, nCells = 100,
                         group.prob = c(0.6, 0.4), deall.prob = 0.3,
                         de.prob = c(0.3, 0.7),
@@ -184,7 +184,7 @@ heatdata(datalist, cellinfo = cellinfo, geneinfo = geneinfo,
          size = 1, ncol = 3)
 ```
 
-```{r, warning = FALSE, fig.height = 4, fig.width = 10, eval = FALSE}
+```{r, warning = FALSE, fig.height = 4, fig.width = 10}
 # plot GCN for all marker genes (i.e. DE genes) across all cell groups
 degeneinfo = geneinfo[which(geneinfo$newcelltype!="None"),]
 degeneinfo$newcelltype = droplevels(degeneinfo$newcelltype)
@@ -192,7 +192,7 @@ degcnlist = lapply(datalist, function(data)gcn(data, genes = degeneinfo$genes))
 heatgcn(degcnlist, geneinfo = degeneinfo, size = 2, ncol = 3)
 ```
 
-```{r, warning = FALSE, fig.height = 4, fig.width = 10, eval = FALSE}
+```{r, warning = FALSE, fig.height = 4, fig.width = 10}
 # plot GCN for marker gene within one cell group
 simparams = metadata(sim)$Params
 rholist = slot(simparams,"corr")
@@ -209,7 +209,7 @@ heatgcn(group2_gcnlist, size = 3, ncol = 4)
 
 ## Simulating tree structured cell group
 
-```{r tree, warning  = FALSE, eval = FALSE}
+```{r tree, warning  = FALSE}
 #generate the tree
 yaml="
     name: All
@@ -227,7 +227,7 @@ tree = data.tree::as.Node(os.list)
 tree = data.tree::as.phylo.Node(tree)
 ```
 
-```{r, warning  = FALSE, fig.height = 7, fig.width = 10, eval = FALSE}
+```{r, warning  = FALSE, fig.height = 7, fig.width = 10}
 # simulation
 sim<-escoSimulateTree(nGenes = 500, nCells = 300, 
                       tree = list(tree), 
@@ -279,7 +279,7 @@ simulating a series of steps between two groups and randomly assigning each
 cell to a step. We can create this kind of simulation using the `"paths"`
 method.
 
-```{r paths, warning=FALSE, fig.height = 3, fig.width = 4, eval = FALSE}
+```{r paths, warning=FALSE, fig.height = 3, fig.width = 4}
 sim <- escoSimulateTraj(nGenes = 1000, nCells = 500,
                         paths.deprob = 0.3,
                         paths.design = data.frame(
@@ -318,7 +318,7 @@ heatdata(list("simulated truth" = datatrue[degenes,]),
 ```
 
 # Sessioninfo
-```{r, warning  = FALSE, eval = FALSE}
+```{r, warning  = FALSE}
 unlink("./show", recursive=TRUE)
 sessionInfo()
 ```

@@ -26,7 +26,6 @@
 #' @examples
 #' # Load example data
 #' data = matrix(rpois(2000*40),2000,40)
-#'
 #' params <- escoEstimate(data)
 #' params
 #' @rdname escoEstimate
