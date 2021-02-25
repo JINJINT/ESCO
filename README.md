@@ -50,4 +50,4 @@ devtools::install_github("JINJINT/ESCO", build_vignettes=TRUE)
 
 ## Reference:
 Check out our paper for ESCO here:
-[ESCO: single cell expression simulation incorporating gene co-expression.](https://www.biorxiv.org/content/10.1101/2020.10.20.347211v1)
+[ESCO: single cell expression simulation incorporating gene co-expression.](https://academic.oup.com/bioinformatics/advance-article/doi/10.1093/bioinformatics/btab116/6149079?guestAccessKey=64c91aa4-1d5e-42da-92df-678b1b08af79)
