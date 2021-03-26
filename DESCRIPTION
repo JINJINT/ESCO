@@ -14,7 +14,7 @@ Description: This package borrowed the infrastructure from package splatter, whi
     estimated from real data and functions are provided for comparing and visualizing real and simulated datasets. 
 License: GPL-3 + file LICENSE
 Depends:
-    R (>= 4.1),
+    R (>= 3.6),
     SingleCellExperiment,
     splatter
 Imports:
