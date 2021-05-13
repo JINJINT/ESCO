@@ -272,7 +272,7 @@ escoEstMean <- function(normcounts, counts, params) {
 #   keep.prob[keep.prob>1] = 1
 #   means = means/keep.prob
   
-#   lmeans <- log(means)
+  lmeans <- log(means)
   
   #means <- means[which(means>quantile(means, prob = 0.1))]
   
