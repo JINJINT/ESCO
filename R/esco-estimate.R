@@ -65,8 +65,8 @@ escoEstimate.matrix <- function(counts, dirname, group = FALSE,
     lib.med <- median(lib.sizes)
     norm.counts <- t(t(counts) / lib.sizes * lib.med)
     norm.counts <- norm.counts[rowSums(norm.counts > 0) > 1, ]
-    norm.countshigh <- t(t(counts) / lib.sizes * lib.medhigh)
-    norm.countshigh <- norm.countshigh[rowSums(norm.countshigh > 0) > 1, ]
+#     norm.countshigh <- t(t(counts) / lib.sizes * lib.medhigh)
+#     norm.countshigh <- norm.countshigh[rowSums(norm.countshigh > 0) > 1, ]
     
     params <- escoEstDropout(norm.counts, params)
     
@@ -77,7 +77,7 @@ escoEstimate.matrix <- function(counts, dirname, group = FALSE,
    
     params <- setParams(params, nGenes = nrow(counts),
                         nCells = ncol(counts))
-    params <- setParams(params, dropout.type = "zeroinflate")
+    params <- setParams(params, dropout.type = "zeroinflate", dropout.cort = FALSE)
     return(params)
   }
   # if the cells are of discrete cell groups, the estimated differently
@@ -166,24 +166,24 @@ escoEstimate.matrix <- function(counts, dirname, group = FALSE,
 #' @importFrom splatter setParams setParam getParams getParam
 escoEstLib <- function(counts, norm.counts, params) {
   
-  #lib.sizes <- colSums(counts)
-  drop.mid <- getParam(params, "dropout.mid")
-  drop.shape <- getParam(params, "dropout.shape")
+  lib.sizes <- colSums(counts)
+#   drop.mid <- getParam(params, "dropout.mid")
+#   drop.shape <- getParam(params, "dropout.shape")
   
-  #means <- winsorize(means, q = 0.01)
-  means = rowMeans(norm.counts)
-  means = means[which(means!=0)]
-  lmeans <- log(means)
-  drop.prob = logistic(lmeans, x0 = drop.mid, k = drop.shape)
-  #keep.prob = (1 - drop.prob)
-  keep.prob = (1 - drop.prob)/(1-dpois(0, lambda = means))
-  keep.prob[keep.prob<0] = 1
-  keep.prob[is.na(keep.prob)] = 1
-  keep.prob[keep.prob>1] = 1
+#   #means <- winsorize(means, q = 0.01)
+#   means = rowMeans(norm.counts)
+#   means = means[which(means!=0)]
+#   lmeans <- log(means)
+#   drop.prob = logistic(lmeans, x0 = drop.mid, k = drop.shape)
+#   #keep.prob = (1 - drop.prob)
+#   keep.prob = (1 - drop.prob)/(1-dpois(0, lambda = means))
+#   keep.prob[keep.prob<0] = 1
+#   keep.prob[is.na(keep.prob)] = 1
+#   keep.prob[keep.prob>1] = 1
   
-  truecounts = counts/keep.prob
+#   truecounts = counts/keep.prob
   
-  lib.sizes = colSums(truecounts)
+#   lib.sizes = colSums(truecounts)
     
   #lib.sizes <- lib.sizes[which(lib.sizes>quantile(lib.sizes, 0.1))]
   
@@ -258,21 +258,21 @@ escoEstMean <- function(normcounts, counts, params) {
   means <- rowMeans(normcounts)
   means <- means[means != 0]
   
-  drop.mid <- getParam(params, "dropout.mid")[1]
-  drop.shape <- getParam(params, "dropout.shape")
+#   drop.mid <- getParam(params, "dropout.mid")[1]
+#   drop.shape <- getParam(params, "dropout.shape")
   
-  lmeans <- log(means)
-  #means <- winsorize(means, q = 0.01)
+#   lmeans <- log(means)
+  means <- winsorize(means, q = 0.01)
   
-  drop.prob = logistic(lmeans, x0 = drop.mid, k = drop.shape)
-  #keep.prob = (1 - drop.prob)
-  keep.prob = (1 - drop.prob)/(1-dpois(0, lambda = means))
-  keep.prob[keep.prob<0] = 0
-  keep.prob[is.na(keep.prob)] = 0
-  keep.prob[keep.prob>1] = 1
-  means = means/keep.prob
+#   drop.prob = logistic(lmeans, x0 = drop.mid, k = drop.shape)
+#   #keep.prob = (1 - drop.prob)
+#   keep.prob = (1 - drop.prob)/(1-dpois(0, lambda = means))
+#   keep.prob[keep.prob<0] = 0
+#   keep.prob[is.na(keep.prob)] = 0
+#   keep.prob[keep.prob>1] = 1
+#   means = means/keep.prob
   
-  lmeans <- log(means)
+#   lmeans <- log(means)
   
   #means <- means[which(means>quantile(means, prob = 0.1))]
   
@@ -363,21 +363,21 @@ escoEstOutlier <- function(norm.counts, params) {
 #' @return \code{escoParams} object with estimated values.
 #' @importFrom splatter setParams setParam getParams getParam
 escoEstBCV <- function(counts, norm.counts, params, cellinfo = NULL){
-  if(is.null(cellinfo)){
-    means = rowMeans(norm.counts)
-    drop.mid <- getParam(params, "dropout.mid")[1]
-    drop.shape <- getParam(params, "dropout.shape")
+#   if(is.null(cellinfo)){
+#     means = rowMeans(norm.counts)
+#     drop.mid <- getParam(params, "dropout.mid")[1]
+#     drop.shape <- getParam(params, "dropout.shape")
     
-    #means <- winsorize(means, q = 0.01)
-    lmeans <- log(means)
-    drop.prob = logistic(lmeans, x0 = drop.mid, k = drop.shape)
-    keep.prob = (1 - drop.prob)
-    #keep.prob = (1 - drop.prob)/(1-dpois(0, lambda = means))
-    keep.prob[keep.prob<0] = 0
-    keep.prob[is.na(keep.prob)] = 0
-    keep.prob[keep.prob>1] = 1
-    counts = counts/keep.prob
-  }
+#     #means <- winsorize(means, q = 0.01)
+#     lmeans <- log(means)
+#     drop.prob = logistic(lmeans, x0 = drop.mid, k = drop.shape)
+#     keep.prob = (1 - drop.prob)
+#     #keep.prob = (1 - drop.prob)/(1-dpois(0, lambda = means))
+#     keep.prob[keep.prob<0] = 0
+#     keep.prob[is.na(keep.prob)] = 0
+#     keep.prob[keep.prob>1] = 1
+#     counts = counts/keep.prob
+#   }
   
   if(is.null(cellinfo)){
     design <- matrix(1, ncol(counts), 1) 
@@ -434,7 +434,7 @@ escoEstDropout <- function(norm.counts, params) {
   
   x_approx_mid <- median(x[which(y > 0.0001 & y < 0.9999)])
   fit <- nls(y ~ logistic(x, x0 = x0, k = k), data = df,
-             start = list(x0 = x_approx_mid, k = -1))
+             start = list(x0 = 0, k = -1))
   
   mid <- summary(fit)$coefficients["x0", "Estimate"]
   shape <- summary(fit)$coefficients["k", "Estimate"]
