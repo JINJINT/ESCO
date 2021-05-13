@@ -215,8 +215,8 @@ escoSimulate <- function(params = newescoParams(),
     if(!dir.exists(dirname)){
       if (verbose) message("Adding technical noise ...")
       if(length(dropout.type)>0){
-        if("zeroinflate" %in% dropout.type)sim<-escoSimDownSample(sim, "", verbose,numCores) 
-        if("downsample" %in% dropout.type)sim<-escoSimZeroInflate(sim, "", verbose)
+        if("zeroinflate" %in% dropout.type)sim<-escoSimZeroInflate(sim, "", verbose)
+        if("downsample" %in% dropout.type)sim<-escoSimDownSample(sim, "", verbose,numCores) 
         if((!"zeroinflate" %in% dropout.type) & (!"downsample" %in% dropout.type)){
           warning("Detect corrupted parameter dropout.type: should be either 'zeroinfalte' or 'downsample', or '' for no dropout...")
           message("Recalibrating to simulation with no dropout...") 
