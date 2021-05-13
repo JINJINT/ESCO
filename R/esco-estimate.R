@@ -262,7 +262,7 @@ escoEstMean <- function(normcounts, counts, params) {
 #   drop.shape <- getParam(params, "dropout.shape")
   
 #   lmeans <- log(means)
-  means <- winsorize(means, q = 0.01)
+  means <- winsorize(means, q = 0.1)
   
 #   drop.prob = logistic(lmeans, x0 = drop.mid, k = drop.shape)
 #   #keep.prob = (1 - drop.prob)
